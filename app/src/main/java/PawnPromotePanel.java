@@ -24,17 +24,17 @@ public class PawnPromotePanel extends JPanel implements ActionListener
 	{
 		try
 		{
-			pawnPromoteBG = ImageIO.read(new File("images/piecePromotion.png"));
+			pawnPromoteBG = ImageIO.read(getClass().getResource("/images/piecePromotion.png"));
 		}
 		catch(IOException ex)
 		{
 			System.err.println("images not found");
 		}
 		
-		queenIcon = new ImageIcon("images/Pieces/White/wQueen.png", "Queen");
-		knightIcon = new ImageIcon("images/Pieces/White/wKnight.png", "Knight");
-		rookIcon = new ImageIcon("images/Pieces/White/wRook.png", "Rook");
-		bishopIcon = new ImageIcon("images/Pieces/White/wBishop.png", "Bishop");
+		queenIcon = new ImageIcon(getClass().getResource("/images/Pieces/White/wQueen.png"), "Queen");
+		knightIcon = new ImageIcon(getClass().getResource("/images/Pieces/White/wKnight.png"), "Knight");
+		rookIcon = new ImageIcon(getClass().getResource("/images/Pieces/White/wRook.png"), "Rook");
+		bishopIcon = new ImageIcon(getClass().getResource("/images/Pieces/White/wBishop.png"), "Bishop");
 		
 		setLayout(new GridLayout(0,4));
 		setBackground(UI.TRANSPARENT);
@@ -95,5 +95,4 @@ public class PawnPromotePanel extends JPanel implements ActionListener
 			this.setVisible(false);
 		}
 	}
-	
 }

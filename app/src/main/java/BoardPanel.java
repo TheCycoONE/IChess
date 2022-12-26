@@ -38,24 +38,24 @@ public class BoardPanel extends JPanel
 		
 		 try
 		 {
-			 boardBG = ImageIO.read(new File("images/Board.png"));
+			 boardBG = ImageIO.read(getClass().getResource("/images/Board.png"));
 			
-			 bKing = new ImageIcon("images/Pieces/Black/bKing.png", "bk");
-			 wKing = new ImageIcon("images/Pieces/White/wKing.png", "wk");
-			 bQueen = new ImageIcon("images/Pieces/Black/bQueen.png", "bq");
-			 wQueen = new ImageIcon("images/Pieces/White/wQueen.png", "wq");
-			 bBishop = new ImageIcon("images/Pieces/Black/bBishop.png", "bb");
-			 wBishop = new ImageIcon("images/Pieces/White/wBishop.png", "wb");
-			 bKnight = new ImageIcon("images/Pieces/Black/bKnight.png", "bn");
-			 wKnight = new ImageIcon("images/Pieces/White/wKnight.png", "wn");
-			 bRook = new ImageIcon("images/Pieces/Black/bRook.png", "br");
-			 wRook = new ImageIcon("images/Pieces/White/wRook.png", "wr");
-			 bPawn = new ImageIcon("images/Pieces/Black/bPawn.png", "bp");
-			 wPawn = new ImageIcon("images/Pieces/White/wPawn.png", "wp");
+			 bKing = new ImageIcon(getClass().getResource("/images/Pieces/Black/bKing.png"), "bk");
+			 wKing = new ImageIcon(getClass().getResource("/images/Pieces/White/wKing.png"), "wk");
+			 bQueen = new ImageIcon(getClass().getResource("/images/Pieces/Black/bQueen.png"), "bq");
+			 wQueen = new ImageIcon(getClass().getResource("/images/Pieces/White/wQueen.png"), "wq");
+			 bBishop = new ImageIcon(getClass().getResource("/images/Pieces/Black/bBishop.png"), "bb");
+			 wBishop = new ImageIcon(getClass().getResource("/images/Pieces/White/wBishop.png"), "wb");
+			 bKnight = new ImageIcon(getClass().getResource("/images/Pieces/Black/bKnight.png"), "bn");
+			 wKnight = new ImageIcon(getClass().getResource("/images/Pieces/White/wKnight.png"), "wn");
+			 bRook = new ImageIcon(getClass().getResource("/images/Pieces/Black/bRook.png"), "br");
+			 wRook = new ImageIcon(getClass().getResource("/images/Pieces/White/wRook.png"), "wr");
+			 bPawn = new ImageIcon(getClass().getResource("/images/Pieces/Black/bPawn.png"), "bp");
+			 wPawn = new ImageIcon(getClass().getResource("/images/Pieces/White/wPawn.png"), "wp");
 			 
-			 hRed = new ImageIcon("images/Highlights/Red.png");
-			 hBlue = new ImageIcon("images/Highlights/Blue.png");
-			 hGreen = new ImageIcon("images/Highlights/Green.png");
+			 hRed = new ImageIcon(getClass().getResource("/images/Highlights/Red.png"));
+			 hBlue = new ImageIcon(getClass().getResource("/images/Highlights/Blue.png"));
+			 hGreen = new ImageIcon(getClass().getResource("/images/Highlights/Green.png"));
 			 
 		}
 		catch(IOException e)
@@ -179,6 +179,4 @@ public class BoardPanel extends JPanel
 			g.drawImage(boardBG,0,0,this);
 		}
 	}
-	
-	
 }

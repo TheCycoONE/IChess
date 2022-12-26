@@ -27,18 +27,18 @@ public class EndGamePanel extends JPanel implements ActionListener
 	{
 		try
 		{
-			endGameBG = ImageIO.read(new File("images/EndGame/endGameDialog.png"));
+			endGameBG = ImageIO.read(getClass().getResource("/images/EndGame/endGameDialog.png"));
 		}
 		catch(IOException ex)
 		{
 			System.err.println("images not found");
 		}
-		nPlay = new ImageIcon("images/EndGame/playIdle.png", "play");
-		rPlay = new ImageIcon("images/EndGame/playOver.png", "play");
-		nQuit = new ImageIcon("images/EndGame/quitIdle.png", "quit");
-		rQuit = new ImageIcon("images/EndGame/quitOver.png", "quit");
-		nSave = new ImageIcon("images/EndGame/saveIdle.png", "save");
-		rSave = new ImageIcon("images/EndGame/saveOver.png", "save");
+		nPlay = new ImageIcon(getClass().getResource("/images/EndGame/playIdle.png"), "play");
+		rPlay = new ImageIcon(getClass().getResource("/images/EndGame/playOver.png"), "play");
+		nQuit = new ImageIcon(getClass().getResource("/images/EndGame/quitIdle.png"), "quit");
+		rQuit = new ImageIcon(getClass().getResource("/images/EndGame/quitOver.png"), "quit");
+		nSave = new ImageIcon(getClass().getResource("/images/EndGame/saveIdle.png"), "save");
+		rSave = new ImageIcon(getClass().getResource("/images/EndGame/saveOver.png"), "save");
 		
 		setLayout(null);
 		setBackground(UI.TRANSPARENT);

@@ -23,11 +23,11 @@ public class TurnPanel extends JPanel
 	{
 		try
 		{
-			sideBG = ImageIO.read(new File("images/SidePanel.png"));
-			wCheckOn = new ImageIcon("images/SidePanel/CheckIndicators/wCheckOn.png", "white check");
-			wCheckOff = new ImageIcon("images/SidePanel/CheckIndicators/wCheckOff.png");
-			bCheckOn = new ImageIcon("images/SidePanel/CheckIndicators/bCheckOn.png", "black check");
-			bCheckOff = new ImageIcon("images/SidePanel/CheckIndicators/bCheckOff.png");
+			sideBG = ImageIO.read(getClass().getResource("/images/SidePanel.png"));
+			wCheckOn = new ImageIcon(getClass().getResource("/images/SidePanel/CheckIndicators/wCheckOn.png"), "white check");
+			wCheckOff = new ImageIcon(getClass().getResource("/images/SidePanel/CheckIndicators/wCheckOff.png"));
+			bCheckOn = new ImageIcon(getClass().getResource("/images/SidePanel/CheckIndicators/bCheckOn.png"), "black check");
+			bCheckOff = new ImageIcon(getClass().getResource("/images/SidePanel/CheckIndicators/bCheckOff.png"));
 		}
 		catch(IOException ex)
 		{
