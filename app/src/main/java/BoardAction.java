@@ -1,12 +1,6 @@
 import java.awt.Point;
 import java.util.Vector;
 
-/**
- * TODO: Castling * * Need flags to see if rook and king have moved. * Perhaps 1 flag for white and
- * black. * wCastle, bCastle: boolean values * * If xCastle is true check to see if the king is in
- * check. * * If castle can take place then make sure the two sqaures are feasible moves * Could
- * reuse the feasible move list or a check checker
- */
 public class BoardAction {
   public Vector<Board> move(Board board, Point origin, Point destination) {
     Vector<Board> boardVector = new Vector<Board>();
@@ -80,10 +74,6 @@ public class BoardAction {
       // only need because i put the regular piece adder in the else below
       newBoard.theBoard[destination.y][destination.x] = movingPiece;
 
-      //			System.out.println("Promotion");
-
-      //			hasPromoted = true;
-
       Board rookBoard = newBoard.clone();
       Board knightBoard = newBoard.clone();
       Board bishopBoard = newBoard.clone();
@@ -120,13 +110,29 @@ public class BoardAction {
   }
 
   /**
-   * Returns a vector of feasible moves * * Pieces are the following: * 1 Pawn * 2 Rook * 3 Knight *
-   * 4 Bishop * 5 Queen * 6 King * * Positive values are white * Negative values are black * * A
-   * Capture is determined if the current piece value * the square it is * going to is <= 0. This is
-   * because if they are the same sign the value * will be positive. So if the value isn't positive
-   * then we know the square * can be occupied. * * After which a check is usually done to see if
-   * the last square was empty. * If it wasn't than the loop exists as we know we've hit another
-   * players * piece and therefore should not continue searching in that direction.
+   * Returns a vector of feasible moves
+   *
+   * <p>Pieces are the following:
+   *
+   * <ul>
+   *   <li>1 Pawn
+   *   <li>2 Rook
+   *   <li>3 Knight
+   *   <li>4 Bishop
+   *   <li>5 Queen
+   *   <li>6 King
+   * </ul>
+   *
+   * <ul>
+   *   <li>Positive values are white
+   *   <li>Negative values are black
+   * </ul>
+   *
+   * A capture is determined if the current piece value * the square it is going to is <= 0. This is
+   * because if they are the same sign the value will be positive. So if the value isn't positive
+   * then we know the square can be occupied. After which a check is usually done to see if the last
+   * square was empty. If it wasn't than the loop exists as we know we've hit another players piece
+   * and therefore should not continue searching in that direction.
    */
   public Vector<Point> getFeasibleMoves(Board board, Point piece) {
     int theCurPiece = board.theBoard[piece.y][piece.x];
@@ -1079,9 +1085,7 @@ public class BoardAction {
         // System.out.println("Squares are free");
 
         if (!checkChecker(board, theKing, tPoint1)) {
-          // System.out.println("First Square is not in check");
           if (!checkChecker(board, theKing, tPoint2)) {
-            // System.out.println("Second Square is not in check");
             retVal = true;
           }
         }
@@ -1122,14 +1126,6 @@ public class BoardAction {
       board.theBoard[7][i] = -(9 - i);
       board.blackPieces.add(new Point(i, 7));
     }
-
-    /*
-    board.theBoard[0][4] = 6;
-    board.theBoard[7][4] = -6;
-
-    board.whitePieces.add(new Point(4,0));
-    board.blackPieces.add(new Point(4,7));
-    */
 
     board.theKings[0] = new Point(4, 0);
     board.theKings[1] = new Point(4, 7);
