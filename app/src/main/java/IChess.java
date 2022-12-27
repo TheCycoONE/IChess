@@ -13,40 +13,34 @@ import javax.swing.*;
  *blocking pieces, if the king is not in check, and if none of the squares the
  *king would have to travel through would put it in check.  All pieces move as
  *expected.  Moving into check and not moving out of check when a move out is
- *available is illegal.  
+ *available is illegal.
  *
- *-En Passen not yet implemented*/    
+ *-En Passen not yet implemented*/
 
-public class IChess
-{
-	public static UI gui;
-	public static int turn = 0; //Even = white, Odd = black
-	public static boolean whiteIsComputer = false;
-	public static boolean blackIsComputer = false;
-	public static int ply = 4; //Number of moves ahead to look.
-	
-	public ComputerAI ai;
-		
-	public IChess() 
-	{
-		 gui = new UI(); //sets up the gui and initializes the chess board
-		 
-		 //starts the computers ai.
-		 ai = new ComputerAI();
-		 ai.start();
-		 	 
-	}
-	
-	/*The main method*/
-	public static void main(String args[])
-	{
-		javax.swing.SwingUtilities.invokeLater(new Runnable() 
-		{
-            public void run() 
-            {
-                new IChess();
-            }
+public class IChess {
+  public static UI gui;
+  public static int turn = 0; // Even = white, Odd = black
+  public static boolean whiteIsComputer = false;
+  public static boolean blackIsComputer = false;
+  public static int ply = 4; // Number of moves ahead to look.
+
+  public ComputerAI ai;
+
+  public IChess() {
+    gui = new UI(); // sets up the gui and initializes the chess board
+
+    // starts the computers ai.
+    ai = new ComputerAI();
+    ai.start();
+  }
+
+  /*The main method*/
+  public static void main(String args[]) {
+    javax.swing.SwingUtilities.invokeLater(
+        new Runnable() {
+          public void run() {
+            new IChess();
+          }
         });
-
-	}
-} 
+  }
+}
