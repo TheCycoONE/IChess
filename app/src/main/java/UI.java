@@ -37,7 +37,7 @@ public class UI extends JFrame implements ActionListener {
     action = new BoardAction();
 
     bp = new BoardPanel();
-    board = action.createInitialBoard();
+    board = Board.createInitialBoard();
     bp.setBoardSetup(board);
 
     contentPane.add(bp, BorderLayout.CENTER);
@@ -188,7 +188,7 @@ public class UI extends JFrame implements ActionListener {
 
         case EndGameDialog.PLAY_AGAIN:
           flag = false;
-          board = action.createInitialBoard();
+          board = Board.createInitialBoard();
           bp.setBoardSetup(board);
           IChess.turn = 0;
           tp.reset();

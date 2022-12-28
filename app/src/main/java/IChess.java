@@ -1,6 +1,3 @@
-import java.awt.*;
-import javax.swing.*;
-
 /*IChess, an chess game by Chris Roy and Stephen Baker, featuring an
  *alpha-beta search for computer AI.  The computer is able to play for
  *white, black, both, or neither side.  At the end of the game move lists can

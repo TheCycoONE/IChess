@@ -3,14 +3,11 @@ import java.util.Vector;
 
 public class ComputerAI extends Thread {
   private Board curBoard;
-  private BoardActionListener actionListener;
   private BoardAction action;
   private int localTurn = -1;
-  private boolean treeIsBuilt;
 
   public ComputerAI() {
     action = new BoardAction();
-    actionListener = new BoardActionListener();
   }
 
   public void run() {
@@ -19,7 +16,6 @@ public class ComputerAI extends Thread {
 
     // System.out.println("Computer AI Started");
     curBoard = IChess.gui.getBoard();
-    treeIsBuilt = false;
 
     while (true) {
       setPriority(MIN_PRIORITY);
@@ -67,12 +63,11 @@ public class ComputerAI extends Thread {
     Point origin = null;
     Point destination = null;
     Point point;
-    int i, j;
 
     // Move by white
     if (IChess.turn % 2 == 0) {
       // check for origin
-      for (i = 0; i < curBoard.whitePieces.size(); i++) {
+      for (int i = 0; i < curBoard.whitePieces.size(); i++) {
         point = curBoard.whitePieces.elementAt(i);
         if (nb.theBoard[point.y][point.x] == 0) {
           origin = point;
@@ -81,7 +76,7 @@ public class ComputerAI extends Thread {
       }
 
       // check for destination
-      for (i = 0; i < nb.whitePieces.size(); i++) {
+      for (int i = 0; i < nb.whitePieces.size(); i++) {
         point = nb.whitePieces.elementAt(i);
         if (curBoard.theBoard[point.y][point.x] <= 0) {
           destination = point;
@@ -93,7 +88,7 @@ public class ComputerAI extends Thread {
     // Move by black
     if (IChess.turn % 2 == 1) {
       // check for origin
-      for (i = 0; i < curBoard.blackPieces.size(); i++) {
+      for (int i = 0; i < curBoard.blackPieces.size(); i++) {
         point = curBoard.blackPieces.elementAt(i);
         if (nb.theBoard[point.y][point.x] == 0) {
           origin = point;
@@ -102,7 +97,7 @@ public class ComputerAI extends Thread {
       }
 
       // check for destination
-      for (i = 0; i < nb.blackPieces.size(); i++) {
+      for (int i = 0; i < nb.blackPieces.size(); i++) {
         point = nb.blackPieces.elementAt(i);
         if (curBoard.theBoard[point.y][point.x] >= 0) {
           destination = point;

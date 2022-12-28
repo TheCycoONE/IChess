@@ -105,7 +105,7 @@ public class TurnPanel extends JPanel {
 
       /*prompts user for a file to save game too*/
       jfcReturnCode = jfc.showSaveDialog(owner);
-      if (jfcReturnCode == jfc.APPROVE_OPTION) {
+      if (jfcReturnCode == JFileChooser.APPROVE_OPTION) {
         outFile = new BufferedWriter(new FileWriter(jfc.getSelectedFile()));
       } else {
         throw new IOException();

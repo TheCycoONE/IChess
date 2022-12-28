@@ -6,8 +6,6 @@ public class BoardAction {
     Vector<Board> boardVector = new Vector<Board>();
 
     Board newBoard;
-    Point p;
-    int i;
     int player = 0;
     int movingPiece = board.theBoard[origin.y][origin.x];
 
@@ -16,9 +14,9 @@ public class BoardAction {
     newBoard.theBoard[origin.y][origin.x] = 0;
 
     // Kill any black piece here!
-    if (board.theBoard[destination.y][destination.x] < 0) {
+    if (board.isBlack(destination.y, destination.x)) {
       newBoard.blackPieces.remove(destination);
-    } else if (board.theBoard[destination.y][destination.x] > 0) {
+    } else if (board.isWhite(destination.y, destination.x)) {
       newBoard.whitePieces.remove(destination);
     }
 
@@ -149,21 +147,21 @@ public class BoardAction {
 
     // White Pawn
     if (theCurPiece == 1) {
-      if (piece.y + 1 < 8 && board.theBoard[piece.y + 1][piece.x] == 0) {
+      if (piece.y + 1 < 8 && board.isVacant(piece.y + 1, piece.x)) {
         Point tPoint = new Point(piece.x, piece.y + 1);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
         }
       }
 
-      if (piece.y + 1 < 8 && piece.x + 1 < 8 && board.theBoard[piece.y + 1][piece.x + 1] < 0) {
+      if (piece.y + 1 < 8 && piece.x + 1 < 8 && board.isBlack(piece.y + 1, piece.x + 1)) {
         Point tPoint = new Point(piece.x + 1, piece.y + 1);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
         }
       }
 
-      if (piece.y + 1 < 8 && piece.x - 1 >= 0 && board.theBoard[piece.y + 1][piece.x - 1] < 0) {
+      if (piece.y + 1 < 8 && piece.x - 1 >= 0 && board.isBlack(piece.y + 1, piece.x - 1)) {
         Point tPoint = new Point(piece.x - 1, piece.y + 1);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
@@ -171,29 +169,29 @@ public class BoardAction {
       }
 
       if (piece.y == 1
-          && board.theBoard[piece.y + 1][piece.x] == 0
-          && board.theBoard[piece.y + 2][piece.x] == 0) {
+          && board.isVacant(piece.y + 1, piece.x)
+          && board.isVacant(piece.y + 2, piece.x)) {
         Point tPoint = new Point(piece.x, piece.y + 2);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
         }
       }
     } else if (theCurPiece == -1) {
-      if (piece.y - 1 >= 0 && board.theBoard[piece.y - 1][piece.x] == 0) {
+      if (piece.y - 1 >= 0 && board.isVacant(piece.y - 1, piece.x)) {
         Point tPoint = new Point(piece.x, piece.y - 1);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
         }
       }
 
-      if (piece.y - 1 >= 0 && piece.x + 1 < 8 && board.theBoard[piece.y - 1][piece.x + 1] > 0) {
+      if (piece.y - 1 >= 0 && piece.x + 1 < 8 && board.isWhite(piece.y - 1, piece.x + 1)) {
         Point tPoint = new Point(piece.x + 1, piece.y - 1);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
         }
       }
 
-      if (piece.y - 1 >= 0 && piece.x - 1 >= 0 && board.theBoard[piece.y - 1][piece.x - 1] > 0) {
+      if (piece.y - 1 >= 0 && piece.x - 1 >= 0 && board.isWhite(piece.y - 1, piece.x - 1)) {
         Point tPoint = new Point(piece.x - 1, piece.y - 1);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
@@ -201,8 +199,8 @@ public class BoardAction {
       }
 
       if (piece.y == 6
-          && board.theBoard[piece.y - 1][piece.x] == 0
-          && board.theBoard[piece.y - 2][piece.x] == 0) {
+          && board.isVacant(piece.y - 1, piece.x)
+          && board.isVacant(piece.y - 2, piece.x)) {
         Point tPoint = new Point(piece.x, piece.y - 2);
         if (!checkChecker(board, piece, tPoint)) {
           fMoves.add(tPoint);
@@ -567,7 +565,7 @@ public class BoardAction {
           retVector.add(new Point(piece.x, i));
         }
       }
-      if (board.theBoard[i][piece.x] != 0) {
+      if (!board.isVacant(i, piece.x)) {
         break;
       }
     }
@@ -579,7 +577,7 @@ public class BoardAction {
           retVector.add(new Point(piece.x, i));
         }
       }
-      if (board.theBoard[i][piece.x] != 0) {
+      if (!board.isVacant(i, piece.x)) {
         break;
       }
     }
@@ -598,7 +596,7 @@ public class BoardAction {
           retVector.add(new Point(i, piece.y));
         }
       }
-      if (board.theBoard[piece.y][i] != 0) {
+      if (!board.isVacant(piece.y, i)) {
         break;
       }
     }
@@ -610,7 +608,7 @@ public class BoardAction {
           retVector.add(new Point(i, piece.y));
         }
       }
-      if (board.theBoard[piece.y][i] != 0) {
+      if (!board.isVacant(piece.y, i)) {
         break;
       }
     }
@@ -1077,8 +1075,7 @@ public class BoardAction {
 
     if (board.castleCheck[turn] && !isBoardInCheck(board, turn)) {
       // System.out.println("Can Castle Still");
-      if (board.theBoard[theKing.y][theKing.x + 1] == 0
-          && board.theBoard[theKing.y][theKing.x + 2] == 0) {
+      if (board.isVacant(theKing.y, theKing.x + 1) && board.isVacant(theKing.y, theKing.x + 2)) {
         Point tPoint1 = new Point(theKing.x + 1, theKing.y);
         Point tPoint2 = new Point(theKing.x + 2, theKing.y);
 
@@ -1093,46 +1090,5 @@ public class BoardAction {
     }
 
     return retVal;
-  }
-
-  public Board createInitialBoard() {
-
-    int i;
-    Board board = new Board();
-
-    // Set up pawns
-    for (i = 0; i < 8; i++) {
-      board.theBoard[1][i] = 1;
-      board.whitePieces.add(new Point(i, 1));
-
-      board.theBoard[6][i] = -1;
-      board.blackPieces.add(new Point(i, 6));
-    }
-
-    // Left side + king
-    for (i = 0; i <= 4; i++) {
-      board.theBoard[0][i] = i + 2;
-      board.whitePieces.add(new Point(i, 0));
-
-      board.theBoard[7][i] = -(i + 2);
-      board.blackPieces.add(new Point(i, 7));
-    }
-
-    // Right side
-    for (i = 5; i < 8; i++) {
-      board.theBoard[0][i] = 9 - i;
-      board.whitePieces.add(new Point(i, 0));
-
-      board.theBoard[7][i] = -(9 - i);
-      board.blackPieces.add(new Point(i, 7));
-    }
-
-    board.theKings[0] = new Point(4, 0);
-    board.theKings[1] = new Point(4, 7);
-
-    board.castleCheck[0] = true;
-    board.castleCheck[1] = true;
-
-    return board;
   }
 }

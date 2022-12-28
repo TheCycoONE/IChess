@@ -11,6 +11,46 @@ import java.util.Vector;
  *castleCheck -	boolean values to determine if castling is still possible
  */
 public class Board {
+  public static Board createInitialBoard() {
+    int i;
+    Board board = new Board();
+
+    // Set up pawns
+    for (i = 0; i < 8; i++) {
+      board.theBoard[1][i] = 1;
+      board.whitePieces.add(new Point(i, 1));
+
+      board.theBoard[6][i] = -1;
+      board.blackPieces.add(new Point(i, 6));
+    }
+
+    // Left side + king
+    for (i = 0; i <= 4; i++) {
+      board.theBoard[0][i] = i + 2;
+      board.whitePieces.add(new Point(i, 0));
+
+      board.theBoard[7][i] = -(i + 2);
+      board.blackPieces.add(new Point(i, 7));
+    }
+
+    // Right side
+    for (i = 5; i < 8; i++) {
+      board.theBoard[0][i] = 9 - i;
+      board.whitePieces.add(new Point(i, 0));
+
+      board.theBoard[7][i] = -(9 - i);
+      board.blackPieces.add(new Point(i, 7));
+    }
+
+    board.theKings[0] = new Point(4, 0);
+    board.theKings[1] = new Point(4, 7);
+
+    board.castleCheck[0] = true;
+    board.castleCheck[1] = true;
+
+    return board;
+  }
+
   public int[][] theBoard = new int[8][8];
   public Vector<Point> blackPieces = new Vector<Point>();
   public Vector<Point> whitePieces = new Vector<Point>();
@@ -51,5 +91,21 @@ public class Board {
     clone.castleCheck[1] = this.castleCheck[1];
 
     return clone;
+  }
+
+  public boolean isBlack(int rank, int file) {
+    return theBoard[rank][file] < 0;
+  }
+
+  public boolean isWhite(int rank, int file) {
+    return theBoard[rank][file] > 0;
+  }
+
+  public boolean isVacant(int rank, int file) {
+    return theBoard[rank][file] == 0;
+  }
+
+  public boolean isPawn(int rank, int file) {
+    return theBoard[rank][file] == 1 || theBoard[rank][file] == -1;
   }
 }
