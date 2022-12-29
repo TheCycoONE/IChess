@@ -11,16 +11,28 @@ import java.util.Vector;
  *castleCheck -	boolean values to determine if castling is still possible
  */
 public class Board {
+  public static final int WHITE = 0;
+  public static final int BLACK = 1;
+
+  public static final int PAWN = 1;
+  public static final int ROOK = 2;
+  public static final int KNIGHT = 3;
+  public static final int BISHOP = 4;
+  public static final int QUEEN = 5;
+  public static final int KING = 6;
+
+  public static final int BLACK_MULTIPLIER = -1;
+
   public static Board createInitialBoard() {
     int i;
     Board board = new Board();
 
     // Set up pawns
     for (i = 0; i < 8; i++) {
-      board.theBoard[1][i] = 1;
+      board.theBoard[1][i] = PAWN;
       board.whitePieces.add(new Point(i, 1));
 
-      board.theBoard[6][i] = -1;
+      board.theBoard[6][i] = BLACK_MULTIPLIER * PAWN;
       board.blackPieces.add(new Point(i, 6));
     }
 
@@ -106,6 +118,6 @@ public class Board {
   }
 
   public boolean isPawn(int rank, int file) {
-    return theBoard[rank][file] == 1 || theBoard[rank][file] == -1;
+    return theBoard[rank][file] == PAWN || theBoard[rank][file] == BLACK_MULTIPLIER * PAWN;
   }
 }

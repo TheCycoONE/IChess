@@ -6,7 +6,7 @@ public class BoardAction {
     Vector<Board> boardVector = new Vector<Board>();
 
     Board newBoard;
-    int player = 0;
+    int player = Board.WHITE;
     int movingPiece = board.theBoard[origin.y][origin.x];
 
     newBoard = board.clone();
@@ -21,26 +21,21 @@ public class BoardAction {
     }
 
     if (movingPiece > 0) {
-      player = 0;
+      player = Board.WHITE;
       newBoard.whitePieces.remove(origin);
       newBoard.whitePieces.add(destination);
-    } else if (movingPiece < 0) {
-      player = 1;
+    } else {
+      player = Board.BLACK;
       newBoard.blackPieces.remove(origin);
       newBoard.blackPieces.add(destination);
     }
 
     // sets castle check to false;
-    if (Math.abs(movingPiece) == 6 || Math.abs(movingPiece) == 2) {
+    if (Math.abs(movingPiece) == Board.KING || Math.abs(movingPiece) == Board.ROOK) {
       newBoard.castleCheck[player] = false;
     }
 
-    // If the pieces are kings update their positions in the piece list
-    /*if(movingPiece == 6){			newBboard.theKings[1] = destination;}
-     */
-
-    if (Math.abs(movingPiece) == 6) {
-
+    if (Math.abs(movingPiece) == Board.KING) {
       newBoard.theKings[player] = destination;
 
       if (destination.x - origin.x == 2) {
@@ -50,14 +45,14 @@ public class BoardAction {
 
         newBoard.theBoard[destination.y][7] = 0;
 
-        if (movingPiece > 0) {
+        if (player == Board.WHITE) {
           newBoard.whitePieces.remove(oldRook);
           newBoard.whitePieces.add(newRook);
-          newBoard.theBoard[destination.y][5] = 2;
+          newBoard.theBoard[destination.y][5] = Board.ROOK;
         } else {
           newBoard.blackPieces.remove(oldRook);
           newBoard.blackPieces.add(newRook);
-          newBoard.theBoard[destination.y][5] = -2;
+          newBoard.theBoard[destination.y][5] = Board.ROOK * Board.BLACK_MULTIPLIER;
         }
       }
     }
@@ -66,9 +61,13 @@ public class BoardAction {
     // otherwise that would imply the pawn has moved backwards which isn't
     // possible.
 
-    if (Math.abs(movingPiece) == 1 && (destination.y == 0 || destination.y == 7)) {
+    if (Math.abs(movingPiece) == Board.PAWN && (destination.y == 0 || destination.y == 7)) {
       // temp solution until the vector method is adopted
-      movingPiece = 5 * movingPiece;
+      if (player == Board.WHITE) {
+        movingPiece = Board.QUEEN;
+      } else {
+        movingPiece = Board.QUEEN * Board.BLACK_MULTIPLIER;
+      }
       // only need because i put the regular piece adder in the else below
       newBoard.theBoard[destination.y][destination.x] = movingPiece;
 
@@ -77,16 +76,16 @@ public class BoardAction {
       Board bishopBoard = newBoard.clone();
       Board queenBoard = newBoard.clone();
 
-      if (player == 0) {
-        rookBoard.theBoard[destination.y][destination.x] = 2;
-        knightBoard.theBoard[destination.y][destination.x] = 3;
-        bishopBoard.theBoard[destination.y][destination.x] = 4;
-        queenBoard.theBoard[destination.y][destination.x] = 5;
+      if (player == Board.WHITE) {
+        rookBoard.theBoard[destination.y][destination.x] = Board.ROOK;
+        knightBoard.theBoard[destination.y][destination.x] = Board.KNIGHT;
+        bishopBoard.theBoard[destination.y][destination.x] = Board.BISHOP;
+        queenBoard.theBoard[destination.y][destination.x] = Board.QUEEN;
       } else {
-        rookBoard.theBoard[destination.y][destination.x] = -2;
-        knightBoard.theBoard[destination.y][destination.x] = -3;
-        bishopBoard.theBoard[destination.y][destination.x] = -4;
-        queenBoard.theBoard[destination.y][destination.x] = -5;
+        rookBoard.theBoard[destination.y][destination.x] = Board.ROOK * Board.BLACK_MULTIPLIER;
+        knightBoard.theBoard[destination.y][destination.x] = Board.KNIGHT * Board.BLACK_MULTIPLIER;
+        bishopBoard.theBoard[destination.y][destination.x] = Board.BISHOP * Board.BLACK_MULTIPLIER;
+        queenBoard.theBoard[destination.y][destination.x] = Board.QUEEN * Board.BLACK_MULTIPLIER;
       }
 
       boardVector.add(rookBoard);
@@ -99,35 +98,13 @@ public class BoardAction {
     }
 
     return boardVector;
-    // return newBoard;
-  }
-
-  // Possibly not necessary...
-  public boolean isFeasibleMove(Board theBoard, Point origin, Point destination) {
-    return false;
   }
 
   /**
    * Returns a vector of feasible moves
    *
-   * <p>Pieces are the following:
-   *
-   * <ul>
-   *   <li>1 Pawn
-   *   <li>2 Rook
-   *   <li>3 Knight
-   *   <li>4 Bishop
-   *   <li>5 Queen
-   *   <li>6 King
-   * </ul>
-   *
-   * <ul>
-   *   <li>Positive values are white
-   *   <li>Negative values are black
-   * </ul>
-   *
-   * A capture is determined if the current piece value * the square it is going to is <= 0. This is
-   * because if they are the same sign the value will be positive. So if the value isn't positive
+   * <p>A capture is determined if the current piece value * the square it is going to is <= 0. This
+   * is because if they are the same sign the value will be positive. So if the value isn't positive
    * then we know the square can be occupied. After which a check is usually done to see if the last
    * square was empty. If it wasn't than the loop exists as we know we've hit another players piece
    * and therefore should not continue searching in that direction.
@@ -137,16 +114,14 @@ public class BoardAction {
     Vector<Point> fMoves = new Vector<Point>();
     int turn;
 
-    if (theCurPiece > 0) // White
-    {
-      turn = 0;
-    } else // Black
-    {
-      turn = 1;
+    if (theCurPiece > 0) {
+      turn = Board.WHITE;
+    } else {
+      turn = Board.BLACK;
     }
 
     // White Pawn
-    if (theCurPiece == 1) {
+    if (theCurPiece == Board.PAWN) {
       if (piece.y + 1 < 8 && board.isVacant(piece.y + 1, piece.x)) {
         Point tPoint = new Point(piece.x, piece.y + 1);
         if (!checkChecker(board, piece, tPoint)) {
@@ -176,7 +151,7 @@ public class BoardAction {
           fMoves.add(tPoint);
         }
       }
-    } else if (theCurPiece == -1) {
+    } else if (theCurPiece == Board.BLACK_MULTIPLIER * Board.PAWN) {
       if (piece.y - 1 >= 0 && board.isVacant(piece.y - 1, piece.x)) {
         Point tPoint = new Point(piece.x, piece.y - 1);
         if (!checkChecker(board, piece, tPoint)) {
@@ -208,7 +183,7 @@ public class BoardAction {
       }
     }
     // Rook
-    else if (Math.abs(theCurPiece) == 2) {
+    else if (Math.abs(theCurPiece) == Board.ROOK) {
       // Forward and Backwards
       fMoves = combineVectors(fMoves, checkVertMoves(board, piece));
 
@@ -217,7 +192,7 @@ public class BoardAction {
 
     }
     // Knight
-    else if (Math.abs(theCurPiece) == 3) { // Forward 2 and left / right 1
+    else if (Math.abs(theCurPiece) == Board.KNIGHT) { // Forward 2 and left / right 1
       if (piece.y + 2 < 8) {
         if (piece.x + 1 < 8) {
           if (theCurPiece * board.theBoard[piece.y + 2][piece.x + 1] <= 0) {
@@ -303,7 +278,7 @@ public class BoardAction {
 
     }
     // Bishop
-    else if (Math.abs(theCurPiece) == 4) {
+    else if (Math.abs(theCurPiece) == Board.BISHOP) {
       // Right Up
       int y1 = piece.y + 1;
       int x1 = piece.x + 1;
@@ -316,7 +291,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -336,7 +311,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -356,7 +331,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -376,7 +351,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -386,7 +361,7 @@ public class BoardAction {
 
     }
     // The Queen!
-    else if (Math.abs(theCurPiece) == 5) {
+    else if (Math.abs(theCurPiece) == Board.QUEEN) {
       // From the Bishop-------------------------------------------------
 
       // Right Up
@@ -401,7 +376,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -421,7 +396,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -441,7 +416,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -461,7 +436,7 @@ public class BoardAction {
           }
         }
 
-        if (board.theBoard[y1][x1] != 0) {
+        if (!board.isVacant(y1, x1)) {
           break;
         }
 
@@ -479,7 +454,7 @@ public class BoardAction {
 
     }
     // The King!
-    else if (Math.abs(theCurPiece) == 6) {
+    else if (Math.abs(theCurPiece) == Board.KING) {
       int y1 = piece.y;
       int x1 = piece.x;
 
@@ -632,13 +607,13 @@ public class BoardAction {
     //		System.out.println("The Current piece is: "+theCurPiece );
 
     if (theCurPiece < 0) {
-      theKing = board.theKings[1];
+      theKing = board.theKings[Board.BLACK];
     } else {
-      theKing = board.theKings[0];
+      theKing = board.theKings[Board.WHITE];
     }
 
     // If the piece you selected happens to be a king change to reflect pos
-    if (Math.abs(theCurPiece) == 6) {
+    if (Math.abs(theCurPiece) == Board.KING) {
       theKing = end;
     }
 
@@ -663,9 +638,9 @@ public class BoardAction {
       // Attacking
       else if (sign < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 6 && Math.abs((tPoint.x - theKing.x)) == 1) {
+        if (newPiece == Board.KING && Math.abs((tPoint.x - theKing.x)) == 1) {
           theResult = true;
-        } else if (newPiece == 2 || newPiece == 5) {
+        } else if (newPiece == Board.ROOK || newPiece == Board.QUEEN) {
           theResult = true;
         } else {
           break;
@@ -690,9 +665,9 @@ public class BoardAction {
         break;
       } else if (sign < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 6 && Math.abs((tPoint.x - theKing.x)) == 1) {
+        if (newPiece == Board.KING && Math.abs((tPoint.x - theKing.x)) == 1) {
           theResult = true;
-        } else if (newPiece == 2 || newPiece == 5) {
+        } else if (newPiece == Board.ROOK || newPiece == Board.QUEEN) {
           theResult = true;
         } else {
           break;
@@ -719,9 +694,9 @@ public class BoardAction {
         break;
       } else if (sign < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 6 && Math.abs((tPoint.x - theKing.x)) == 1) {
+        if (newPiece == Board.KING && Math.abs((tPoint.x - theKing.x)) == 1) {
           theResult = true;
-        } else if (newPiece == 2 || newPiece == 5) {
+        } else if (newPiece == Board.ROOK || newPiece == Board.QUEEN) {
           theResult = true;
         } else {
           break;
@@ -746,9 +721,9 @@ public class BoardAction {
         break;
       } else if (sign < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 6 && Math.abs((tPoint.x - theKing.x)) == 1) {
+        if (newPiece == Board.KING && Math.abs((tPoint.x - theKing.x)) == 1) {
           theResult = true;
-        } else if (newPiece == 2 || newPiece == 5) {
+        } else if (newPiece == Board.ROOK || newPiece == Board.QUEEN) {
           theResult = true;
         } else {
           break;
@@ -784,8 +759,11 @@ public class BoardAction {
 
       if (theCurPiece * newPiece < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 4 || newPiece == 5 || newPiece == 6 || newPiece == 1) {
-          if (newPiece == 6 || newPiece == 1) {
+        if (newPiece == Board.BISHOP
+            || newPiece == Board.QUEEN
+            || newPiece == Board.KING
+            || newPiece == Board.PAWN) {
+          if (newPiece == Board.KING || newPiece == Board.PAWN) {
             if (Math.abs((x1 - theKing.x) * (y1 - theKing.y)) == 1) {
               theResult = true;
             } else {
@@ -829,8 +807,11 @@ public class BoardAction {
 
       if (theCurPiece * newPiece < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 4 || newPiece == 5 || newPiece == 6 || newPiece == 1) {
-          if (newPiece == 6 || newPiece == 1) {
+        if (newPiece == Board.BISHOP
+            || newPiece == Board.QUEEN
+            || newPiece == Board.KING
+            || newPiece == Board.PAWN) {
+          if (newPiece == Board.KING || newPiece == Board.PAWN) {
             if (Math.abs((x1 - theKing.x) * (y1 - theKing.y)) == 1) {
               theResult = true;
             } else {
@@ -874,8 +855,11 @@ public class BoardAction {
 
       if (theCurPiece * newPiece < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 4 || newPiece == 5 || newPiece == 6 || newPiece == 1) {
-          if (newPiece == 6 || newPiece == 1) {
+        if (newPiece == Board.BISHOP
+            || newPiece == Board.QUEEN
+            || newPiece == Board.KING
+            || newPiece == Board.PAWN) {
+          if (newPiece == Board.KING || newPiece == Board.PAWN) {
             if (Math.abs((x1 - theKing.x) * (y1 - theKing.y)) == 1) {
               theResult = true;
             } else {
@@ -919,8 +903,11 @@ public class BoardAction {
 
       if (theCurPiece * newPiece < 0) {
         newPiece = Math.abs(newPiece);
-        if (newPiece == 4 || newPiece == 5 || newPiece == 6 || newPiece == 1) {
-          if (newPiece == 6 || newPiece == 1) {
+        if (newPiece == Board.BISHOP
+            || newPiece == Board.QUEEN
+            || newPiece == Board.KING
+            || newPiece == Board.PAWN) {
+          if (newPiece == Board.KING || newPiece == Board.PAWN) {
             if (Math.abs((x1 - theKing.x) * (y1 - theKing.y)) == 1) {
               theResult = true;
             } else {
@@ -948,7 +935,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y + 2][theKing.x + 1];
         if ((!end.equals(new Point(theKing.x + 1, theKing.y + 2)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -957,7 +944,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y + 2][theKing.x - 1];
         if ((!end.equals(new Point(theKing.x - 1, theKing.y + 2)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -969,7 +956,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y - 2][theKing.x + 1];
         if ((!end.equals(new Point(theKing.x + 1, theKing.y - 2)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -978,7 +965,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y - 2][theKing.x - 1];
         if ((!end.equals(new Point(theKing.x - 1, theKing.y - 2)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -990,7 +977,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y + 1][theKing.x + 2];
         if ((!end.equals(new Point(theKing.x + 2, theKing.y + 1)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -999,7 +986,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y + 1][theKing.x - 2];
         if ((!end.equals(new Point(theKing.x - 2, theKing.y + 1)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -1011,7 +998,7 @@ public class BoardAction {
         int thePiece = board.theBoard[theKing.y - 1][theKing.x + 2];
         if ((!end.equals(new Point(theKing.x + 2, theKing.y - 1)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -1021,7 +1008,7 @@ public class BoardAction {
 
         if ((!end.equals(new Point(theKing.x - 2, theKing.y - 1)))
             && theCurPiece * thePiece < 0
-            && Math.abs(thePiece) == 3) {
+            && Math.abs(thePiece) == Board.KNIGHT) {
           theResult = true;
         }
       }
@@ -1045,8 +1032,7 @@ public class BoardAction {
     Vector<Point> feasible;
     boolean isMate = true;
 
-    if (player == 0) // White
-    {
+    if (player == Board.WHITE) {
       for (i = 0; i < board.whitePieces.size(); i++) {
         feasible = getFeasibleMoves(board, board.whitePieces.elementAt(i));
         if (!feasible.isEmpty()) {
@@ -1054,8 +1040,7 @@ public class BoardAction {
           break;
         }
       }
-    } else // Black
-    {
+    } else {
       for (i = 0; i < board.blackPieces.size(); i++) {
         feasible = getFeasibleMoves(board, board.blackPieces.elementAt(i));
         if (!feasible.isEmpty()) {
