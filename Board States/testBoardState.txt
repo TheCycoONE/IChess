@@ -1,0 +1,57 @@
+## Comments
+##
+## the file format is broken down as follows
+##
+## The first character represents the colour w or b
+##
+## The next char is one of the following:
+##
+##	P: Pawn
+##	R: Rook
+##	N: Knight
+##	B: Bishop
+##	Q: Queen
+##	K: King
+##
+## The next two characters are the piece location in
+## the form XY, where X is A-H and Y is 1-8. These
+## Correspond to the X and Y values on the board
+## Starting from the bottom left corner.
+##
+## For example bPA7 is a black pawn at A7
+##---------------------------------------------------
+##
+## Black Pieces
+bPA7
+bPB6
+bPC7
+bPD7
+bPE7
+bPF5
+bPG7
+bPH7
+bRA8
+bNB8
+bBC8
+bQD8
+bKE8
+bBF8
+bNG4
+bRH8
+## White Pieces
+wPA2
+wPB2
+wPC2
+wPD4
+wPE2
+wPF2
+wPG2
+wPH2
+wRD1
+wNA3
+wBG5
+wQD3
+wKC1
+wBF1
+wNG1
+wRH1

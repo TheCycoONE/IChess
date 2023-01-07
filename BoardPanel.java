@@ -4,6 +4,12 @@ import java.io.*;
 import javax.imageio.*;
 import javax.swing.border.EmptyBorder;
 
+ /** IChess version 1.0
+  **
+  ** Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899)
+  **/
+  
+
 /*BoardPanel class - takes care of representing a board state on the screen*/
 public class BoardPanel extends JPanel
 {
@@ -29,7 +35,7 @@ public class BoardPanel extends JPanel
 	private ImageIcon hRed;
 	private ImageIcon hBlue;
 	private ImageIcon hGreen;
-	
+	private ImageIcon hPurple;
 	
 	public BoardPanel()
 	{
@@ -56,7 +62,7 @@ public class BoardPanel extends JPanel
 			 hRed = new ImageIcon("images/Highlights/Red.png");
 			 hBlue = new ImageIcon("images/Highlights/Blue.png");
 			 hGreen = new ImageIcon("images/Highlights/Green.png");
-			 
+			 hPurple = new ImageIcon("images/Highlights/Purple.png");
 		}
 		catch(IOException e)
 		{
@@ -150,19 +156,23 @@ public class BoardPanel extends JPanel
 	/*Forward highlighting to the appropriate square*/
 	public synchronized void highlight(Point hsqr, Color c)
 	{
-		if (c == Color.BLUE)
+		if (c == Color.BLUE)			// Origin
 		{
 			square[hsqr.y][hsqr.x].setHighlight(hBlue);
 		}
-		else if (c == Color.GREEN)
+		else if (c == Color.GREEN)		// Valid Move
 		{
 			square[hsqr.y][hsqr.x].setHighlight(hGreen);
 		}
-		else if (c == Color.RED)
+		else if (c == Color.RED)		// Capture
 		{
 			square[hsqr.y][hsqr.x].setHighlight(hRed);
 		}
-		else
+		else if (c == Color.MAGENTA)	// Castle
+		{
+			square[hsqr.y][hsqr.x].setHighlight(hPurple);
+		}
+		else							// None
 		{
 			square[hsqr.y][hsqr.x].setHighlight(null);
 		}

@@ -1,8 +1,11 @@
 import java.awt.event.*;
 import java.awt.*;
 
-/*An ActionListener to receive events from the board, ie. when the user
- *clicks on a square*/
+ /** IChess version 1.0
+  **
+  ** Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899)
+  **/
+  
 public class BoardActionListener implements ActionListener
 {
 	public synchronized void actionPerformed(ActionEvent e)
@@ -13,12 +16,12 @@ public class BoardActionListener implements ActionListener
 		if(	IChess.turn % 2 == 0 && IChess.whiteIsComputer == false ||
 			IChess.turn % 2 == 1 && IChess.blackIsComputer == false)
 		{
+			
 			cSquare = translateToPoint(e.getActionCommand());
 			IChess.gui.chosenSquare(cSquare);
 		}
 	}
 	
-	/*Method to translate chess coordinates to internal coordinates*/
 	private Point translateToPoint(String chessCoord)
 	{
 		Point realCoord = new Point();

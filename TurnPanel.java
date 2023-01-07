@@ -4,6 +4,11 @@ import java.io.*;
 import javax.imageio.*;
 import javax.swing.border.EmptyBorder;
 
+ /** IChess version 1.0
+  **
+  ** Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899)
+  **/
+  
 public class TurnPanel extends JPanel
 {
 	private static final long serialVersionUID = 80L;
@@ -23,11 +28,26 @@ public class TurnPanel extends JPanel
 	{
 		try
 		{
-			sideBG = ImageIO.read(new File("images/SidePanel.png"));
-			wCheckOn = new ImageIcon("images/SidePanel/CheckIndicators/wCheckOn.png", "white check");
-			wCheckOff = new ImageIcon("images/SidePanel/CheckIndicators/wCheckOff.png");
-			bCheckOn = new ImageIcon("images/SidePanel/CheckIndicators/bCheckOn.png", "black check");
-			bCheckOff = new ImageIcon("images/SidePanel/CheckIndicators/bCheckOff.png");
+			sideBG = ImageIO.read
+			(
+				new File("images/SidePanel.png")
+			);
+			wCheckOn = new ImageIcon
+			(
+				"images/SidePanel/CheckIndicators/wCheckOn.png", "white check"
+			);
+			wCheckOff = new ImageIcon
+			(
+				"images/SidePanel/CheckIndicators/wCheckOff.png"
+			);
+			bCheckOn = new ImageIcon
+			(
+				"images/SidePanel/CheckIndicators/bCheckOn.png", "black check"
+			);
+			bCheckOff = new ImageIcon
+			(
+				"images/SidePanel/CheckIndicators/bCheckOff.png"
+			);
 		}
 		catch(IOException ex)
 		{
@@ -36,7 +56,6 @@ public class TurnPanel extends JPanel
 		
 		setLayout(null);
 		
-		//setBackground(Color.BLACK);
 		turnDisplay = new JLabel("WHITE");
 		turnDisplay.setBounds(20,17,200,30);
 		add(turnDisplay);
@@ -91,7 +110,7 @@ public class TurnPanel extends JPanel
 			{
 				moveDisplay.append("\r\n");
 			}
-			moveDisplay.append(IChess.turn / 2 + 1 + ":");
+			moveDisplay.append(IChess.turn / 2 + 1 + ": ");
 			turnDisplay.setText("BLACK");
 		}
 		else
@@ -114,7 +133,10 @@ public class TurnPanel extends JPanel
 			jfcReturnCode = jfc.showSaveDialog(owner);		
 			if (jfcReturnCode == jfc.APPROVE_OPTION)
 			{
-				outFile = new BufferedWriter(new FileWriter(jfc.getSelectedFile()));	
+				outFile = new BufferedWriter
+				(
+					new FileWriter(jfc.getSelectedFile())
+				);	
 			}
 			else
 			{
@@ -124,7 +146,11 @@ public class TurnPanel extends JPanel
 			outFile.write(moveDisplay.getText());
 			outFile.close();
 			
-			JOptionPane.showMessageDialog(this,"Moves have been saved to file","Save complete", JOptionPane.INFORMATION_MESSAGE);
+			JOptionPane.showMessageDialog
+			(
+				this,"Moves have been saved to file",
+				"Save complete", JOptionPane.INFORMATION_MESSAGE
+			);
 		}
 		catch(IOException ex)
 		{

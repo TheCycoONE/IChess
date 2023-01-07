@@ -2,85 +2,87 @@ import java.util.Vector;
 import java.awt.Point;
 import java.util.Stack;
 
+ /** IChess version 1.0
+  **
+  ** Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899)
+  **/
+  
 public class ComputerAI extends Thread
 {
-	private Board curBoard;
-	private BoardActionListener actionListener;
-	private BoardAction action;
-	private int localTurn = -1;
-	private boolean treeIsBuilt;
-	
+	private Board curBoard;			//the current board
+	private BoardAction action;		//board manipualation and move functions			
+	private int localTurn = -1;		//the turn being or last evaluated by AI
+
+	//Constructor, sets up action for use with this thread
 	public ComputerAI()
 	{
 		action = new BoardAction();
-		actionListener = new BoardActionListener();
 	}
 	
+	//where thread executes
 	public void run()
 	{
-		Vector<Board> children;
-		Board nextBoard;
-		
-//System.out.println("Computer AI Started");
+		Vector<Board> children;		//a vector of board states reached by a move
+		Board nextBoard;			//the board chosen by the search to move to
+
+		//syncronize the board in the thread with the board shown to the user
 		curBoard = IChess.gui.getBoard();	
-		treeIsBuilt = false;
 		
 		while(true)
 		{
+			//prevent the thread from slowing performance when not doing much
 			setPriority(MIN_PRIORITY);
-			checkSync();
 			
+			/* Sets the thread turn to one less than the actual turn.  This way
+			 * if it is the computers turn the actual board state will be grabed
+	 		 * and a move will be made*/
+			if(localTurn != IChess.turn && localTurn != IChess.turn - 1)
+			{
+				localTurn = IChess.turn - 1;
+			}
+			
+			//should the computer make a move now?
 			if(	localTurn == IChess.turn - 1 &&
 				(IChess.turn % 2 == 0 && IChess.whiteIsComputer == true ||
 				IChess.turn % 2 == 1 && IChess.blackIsComputer == true))
 			{
 				setPriority(NORM_PRIORITY);
 				
-//System.out.println("Human has made a move");
-	
+				//make sure everything is syncronized	
 				curBoard = IChess.gui.getBoard();
 				localTurn = IChess.turn;
 				
+				//get all the possible moves
 				children = getAllChildren(curBoard, localTurn);
 				
+				//if there is any moves to make
 				if(!children.isEmpty())
 				{
+					//find the best move
 					nextBoard = alphaBetaSearch(children);
 				
+					//check if no best move was found, should never happen
 					if(nextBoard == null)
 					{
 						System.err.println("Returned Board is null...");
-						//exit(1);
 					}
 					
+					//take care of details handling a move
 					sendMove(nextBoard);
 				}
 			}
 			
-				
+			//Notify gui that the AI is not determining a move
+			IChess.gui.wakeUp();					
 		}	
-	}
-	
-	
-	/*Makes sure that the computer's board is not different from the one
-	 *being shown to the user*/
-	private void checkSync()
-	{	
-		if(localTurn != IChess.turn && localTurn != IChess.turn - 1)
-		{
-//System.out.println("Out of sync: lc was " + localTurn);
-			setPriority(NORM_PRIORITY);
-			localTurn = IChess.turn - 1;
-			//curBoard = IChess.gui.getBoard();
-		}
 	}
 	
 	/*Calculates what move the computer made and sends it to the gui*/
 	private void sendMove(Board nb)
 	{
-			Point origin = null;
-			Point destination = null;
-			Point point;
+			Point origin = null;		//location piece moved from
+			Point destination = null;	//location piece moved to
+			Point point;				//location of a piece
 			int i, j;
 			
 			//Move by white
@@ -135,11 +137,13 @@ public class ComputerAI extends Thread
 				}
 			}
 			
-			
+			//set the current board of the thread to this board
 			curBoard = nb;
-			IChess.gui.setComputerMove(nb, origin, destination);
 			
+			//send this board to the gui
+			IChess.gui.setComputerMove(nb, origin, destination);
 	}
+	
 	
 	/*Produces all the moves which can be made from a particular board state*/
 	private Vector<Board> getAllChildren(Board board, int ft)
@@ -154,10 +158,18 @@ public class ComputerAI extends Thread
 		{
 			for(i = 0; i < board.whitePieces.size(); i++)
 			{
-				feasible = action.getFeasibleMoves(board, board.whitePieces.elementAt(i));
+				feasible = action.getFeasibleMoves
+				(	board, 
+					board.whitePieces.elementAt(i)
+				);
 				for(j = 0; j < feasible.size(); j++)
 				{
-					moves = action.move(board, board.whitePieces.elementAt(i), feasible.elementAt(j));
+					moves = action.move
+					(
+						board,
+						board.whitePieces.elementAt(i),
+						feasible.elementAt(j)
+					);
 					for(k = 0; k < moves.size(); k++)
 					{
 						children.add(moves.elementAt(k));
@@ -169,10 +181,19 @@ public class ComputerAI extends Thread
 		{
 			for(i = 0; i < board.blackPieces.size(); i++)
 			{
-				feasible = action.getFeasibleMoves(board, board.blackPieces.elementAt(i));
+				feasible = action.getFeasibleMoves
+				(
+					board,
+					board.blackPieces.elementAt(i)
+				);
 				for(j = 0; j < feasible.size(); j++)
 				{
-					moves = action.move(board, board.blackPieces.elementAt(i), feasible.elementAt(j));
+					moves = action.move
+					(
+						board,
+						board.blackPieces.elementAt(i),
+						feasible.elementAt(j)
+					);
 					for(k = 0; k < moves.size(); k++)
 					{
 						children.add(moves.elementAt(k));
@@ -183,47 +204,47 @@ public class ComputerAI extends Thread
 		return children;
 	}
 	
+	
 	/*Calls alpha-beta evaluation on each of the board states in the vector
 	 *and returns the best of them*/
 	private Board alphaBetaSearch(Vector<Board> nodes)
 	{
 		int i;
-		int min = (int) Integer.MAX_VALUE;
-		int max = (int) Integer.MIN_VALUE;
-		int temp = 0;
-		Board returnBoard = null;
+		int min = (int) Integer.MAX_VALUE;	//lowest value of a board so far
+		int max = (int) Integer.MIN_VALUE;	//highest value of a board so far
+		int temp = 0;						//value of current board
+		Board returnBoard = null;			//the best board so far
 		
-//System.out.println("..." + localTurn);
+		//check every board to find the best
 		for(i = 0; i < nodes.size(); i++)
 		{
-			//Note +1 and -1 for min and max, to avoid problems with finding the min / max later
-			temp = alphaBetaEval(nodes.elementAt(i), Integer.MIN_VALUE + 1, Integer.MAX_VALUE - 1, localTurn + 1);
-//System.out.println("temp: " + temp);
+//+1 and -1 for min and max, to avoid problems with finding the min / max later
+			temp = alphaBetaEval(	nodes.elementAt(i), 
+									Integer.MIN_VALUE + 1, 
+									Integer.MAX_VALUE - 1, 
+									localTurn + 1			);
+			
+			//For black find the board with the lowest value				
 			if(localTurn % 2 == 1)
 			{
-//System.out.println("temp: " + temp + "  " + "min: " + min);
-				if((temp < min))// || (temp == min && Math.random() > .5) || (temp < min + 9 && Math.random() > .9 ))
+				if(temp < min)
 				{
 					returnBoard = nodes.elementAt(i);
 					min = temp;
-//System.out.println("New Min: " + i+": " + min);
-				}
-			}
-
-//System.out.println(temp);
-			if(localTurn % 2 == 0)
-			{
-//System.out.println("temp: " + temp + "  " + "max: " + max);
-				if((temp > max))// || (temp == min && Math.random() > .5) || (temp > max - 9 && Math.random() > .9))
-				{
-					returnBoard = nodes.elementAt(i);
-					max = temp;
-//System.out.println("New Max: " + i+": " + max);
 				}
 			}
 			
+			//For white find the board with the highest value
+			if(localTurn % 2 == 0)
+			{
+				if(temp > max)
+				{
+					returnBoard = nodes.elementAt(i);
+					max = temp;
+				}
+			}
 		}
-//System.out.println("eval max/min: " + max + "/" + min);
+		
 		return returnBoard;
 		
 	}
@@ -231,29 +252,47 @@ public class ComputerAI extends Thread
 	/*Perform the alpha-beta evaulation on a board state*/
 	private int alphaBetaEval(Board node, int alpha, int beta, int ft)
 	{
-		int pieceIndex, feasibleIndex, moveIndex;
-		Vector<Point> feasible;
-		Vector<Board> moves;
-		Board tmpBoard;
+		int iPiece, iFeasible, iMove;	//indexes of valid moves
+		Vector<Point> feasible;		//list of feasible moves for a piece
+		Vector<Board> moves;		//list of board states resulting from a move
+		Board tmpBoard;				//a temporary board
+		boolean mate;				//flag to determine if mate
 		
+		//find out if this is a leaf node and if so evaluate it
 		if(terminateCondition(node, ft))
 		{
-			return evaluationFunction(node);
+			return evaluationFunction(node, ft);
 		}
+		
 		
 		if(ft % 2 == 1) //Minimizing (Black)
 		{
-			for(pieceIndex = 0; pieceIndex < node.blackPieces.size(); pieceIndex++)
+			mate = true;
+			for(iPiece = 0; iPiece < node.blackPieces.size(); iPiece++)
 			{
-				feasible = action.getFeasibleMoves(node, node.blackPieces.elementAt(pieceIndex));
+				feasible = action.getFeasibleMoves
+				(
+					node,
+					node.blackPieces.elementAt(iPiece)
+				);
 				
-				for(feasibleIndex = 0; feasibleIndex < feasible.size(); feasibleIndex++)
+				for(iFeasible = 0; iFeasible < feasible.size(); iFeasible++)
 				{
-					moves = action.move(node, node.blackPieces.elementAt(pieceIndex), feasible.elementAt(feasibleIndex));	
-					for(moveIndex = 0; moveIndex < moves.size(); moveIndex++)
+					mate = false; //there is at least one feasible move
+					moves = action.move
+					(
+						node,
+						node.blackPieces.elementAt(iPiece),
+						feasible.elementAt(iFeasible)
+					);	
+					for(iMove = 0; iMove < moves.size(); iMove++)
 					{
-						tmpBoard = moves.elementAt(moveIndex);
-						beta = Math.min(alphaBetaEval(tmpBoard,alpha,beta, ft+1),beta);
+						tmpBoard = moves.elementAt(iMove);
+						beta = Math.min
+						(
+							alphaBetaEval(tmpBoard,alpha,beta, ft+1),
+							beta
+						);
 						if(beta <= alpha)
 						{
 							return beta;
@@ -261,21 +300,48 @@ public class ComputerAI extends Thread
 					}
 				}
 			}
+			if(mate)
+			{
+				//BLACK CHECKMATE
+				if(action.isBoardInCheck(node, 1))
+				{
+					return Integer.MAX_VALUE - 1;
+				}
+				else //STALEMATE
+				{
+					return 0;
+				}
+			}
 			return beta;			
 		}
 		else //Maximizing (White)
 		{
-			for(pieceIndex = 0; pieceIndex < node.whitePieces.size(); pieceIndex++)
+			mate = true;
+			for(iPiece = 0; iPiece < node.whitePieces.size(); iPiece++)
 			{
-				feasible = action.getFeasibleMoves(node, node.whitePieces.elementAt(pieceIndex));
+				feasible = action.getFeasibleMoves
+				(
+					node,
+					node.whitePieces.elementAt(iPiece)
+				);
 				
-				for(feasibleIndex = 0; feasibleIndex < feasible.size(); feasibleIndex++)
+				for(iFeasible = 0; iFeasible < feasible.size(); iFeasible++)
 				{
-					moves = action.move(node, node.whitePieces.elementAt(pieceIndex), feasible.elementAt(feasibleIndex));
-					for(moveIndex = 0; moveIndex < moves.size(); moveIndex++)
+					mate = false; //there is at least one feasible move
+					moves = action.move
+					(
+						node, 
+						node.whitePieces.elementAt(iPiece), 
+						feasible.elementAt(iFeasible)
+					);
+					for(iMove = 0; iMove < moves.size(); iMove++)
 					{
-						tmpBoard = moves.elementAt(moveIndex);
-						alpha = Math.max(alphaBetaEval(tmpBoard,alpha,beta, ft+1),alpha);
+						tmpBoard = moves.elementAt(iMove);
+						alpha = Math.max
+						(
+							alphaBetaEval(tmpBoard,alpha,beta, ft+1),
+							alpha
+						);
 						if(alpha >= beta)
 						{
 							return alpha;
@@ -283,61 +349,50 @@ public class ComputerAI extends Thread
 					}
 				}
 			}
+			if(mate)
+			{
+				//WHITE CHECKMATE
+				if(action.isBoardInCheck(node, 0))
+				{
+					return Integer.MIN_VALUE + 1;
+				}
+				else  //STALEMATE
+				{ 
+					return 0;
+				}
+			}
 			return alpha;			
 		}
 	}
 	
+
 	
 	/*Finds the matching child of a root for a human move.  If none is found
 	 *a -1 is returned*/  
-	private int indexOfMatchingChild(Board currentBoard, Vector<Board> children)
+	private boolean areEqual(Board boardA, Board boardB)
 	{
-		boolean isChild;
-		Point piece;
-		int child = -1;
 		int i, j;
-		for(i = 0; i < children.size(); i++)
+	
+		//same number of pieces
+		if(	boardA.whitePieces.size() != boardB.whitePieces.size() ||
+			boardA.blackPieces.size() != boardB.blackPieces.size())
 		{
-			isChild = true;
-			if((localTurn - 1) % 2 == 0)
+			return false;
+		}
+		
+		//each piece is in the same spot
+		for(i = 0; i < 8; i++)
+		{
+			for(j = 0; j < 8; j++)
 			{
-				for(j = 0; j < currentBoard.whitePieces.size(); j++)
+				if(boardA.theBoard[i][j] != boardB.theBoard[i][j])
 				{
-					piece = currentBoard.whitePieces.elementAt(j);
-					if(currentBoard.theBoard[piece.y][piece.x] != 
-						children.elementAt(i).theBoard[piece.y][piece.x])
-					{
-						isChild = false;
-						break;
-					}
-				}
-				if(isChild)
-				{
-					child = i;
-					break;
-				}
-			}
-			else
-			{
-				for(j = 0; j < currentBoard.blackPieces.size(); j++)
-				{
-					piece = currentBoard.blackPieces.elementAt(j);
-					if(	currentBoard.theBoard[piece.y][piece.x] != 
-						children.elementAt(i).theBoard[piece.y][piece.x])
-					{
-						isChild = false;
-						break;
-					}
-				}
-				if(isChild)
-				{
-					child = i;
-					break;
+					return false;
 				}
 			}
 		}
 		
-		return child;
+		return true;
 	}
 	
 	
@@ -345,21 +400,54 @@ public class ComputerAI extends Thread
 	
 	/*evaluation function that returns +ve values on boards 
 	 *that favour white, and -ve values on boards that favour black */
-	private int evaluationFunction(Board aBoard)
+	private int evaluationFunction(Board aBoard, int ft)
 	{
-		Point pieceLocation;
-		int piece;
-		
-		int eval = 0;
+		Point location;	//location of piece being checked
+		int piece;				//type of piece being checked
+		int eval = 0;			//value of board
 		int i;
+		
+		
+		//Avoid repeating moves and conditions that would lead to a draw
+		switch(localTurn % 2)
+		{
+			case 0:	//white
+				//cycle
+				if(areEqual(aBoard, curBoard))
+				{
+					return Integer.MIN_VALUE + 5;	
+				}
+				//close to draw
+				if(aBoard.movesUntilDraw < 10)
+				{
+					eval -= (10 - aBoard.movesUntilDraw) * 50;
+				}
+				break;
+			
+			case 1:	//black
+				//cycle
+				if(areEqual(aBoard, curBoard))
+				{
+					return Integer.MAX_VALUE - 5;
+				}
+				//close to draw
+				if(aBoard.movesUntilDraw < 10)
+				{
+					eval += (10 - aBoard.movesUntilDraw) * 50;
+				}
+				break;
+		}
 		
 		//White (+ve)
 		for(i = 0; i < aBoard.whitePieces.size(); i++)
 		{
-			pieceLocation = aBoard.whitePieces.elementAt(i);
-			piece = aBoard.theBoard[pieceLocation.y][pieceLocation.x];
+			location = aBoard.whitePieces.elementAt(i);
+			piece = aBoard.theBoard[location.y][location.x];
+			
 			//Center of the board
-			if((pieceLocation.y == 3 || pieceLocation.y == 4) && (pieceLocation.x == 3 || pieceLocation.x == 4) && piece > 1) 
+			if(	(location.y == 3 || location.y == 4) && 
+				(location.x == 3 || location.x == 4) && 
+				(piece > 1)	) 
 			{
 				eval += 2;
 			}
@@ -368,22 +456,33 @@ public class ComputerAI extends Thread
 			{
 				case 1:  //Pawn
 					eval += 10;
-					eval += pieceLocation.y; //+1 for every step forward
+					eval += location.y; //+1 for every step forward
+					
+					//Pawns should not block king's movement
+					if(	(location.x >= aBoard.theKings[0].x - 1 &&
+						 location.x <= aBoard.theKings[0].x + 1) &&
+						(location.y >= aBoard.theKings[0].y - 1 &&
+						 location.y <= aBoard.theKings[0].y + 1))
+					{
+						eval -= 1;
+					}
+					
 					break;
 				case 2: //Rook
-					eval += 50;
+					eval += 100;
 					break;
 				case 3: //Knight
-					eval +=100;
+					eval += 60;
 					break;
 				case 4: //Bishop
-					eval +=50;
+					eval += 50;
 					break;
 				case 5: //Queen
-					eval += 200;
+					eval += 600;
 					break;
 				case 6: //King
 					eval += 10000;
+					eval += action.getFeasibleMoves(aBoard, location).size();
 					break;
 			}
 		}
@@ -391,11 +490,13 @@ public class ComputerAI extends Thread
 		//Black (-ve)
 		for(i = 0; i < aBoard.blackPieces.size(); i++)
 		{
-			pieceLocation = aBoard.blackPieces.elementAt(i);
-			piece = aBoard.theBoard[pieceLocation.y][pieceLocation.x];
+			location = aBoard.blackPieces.elementAt(i);
+			piece = aBoard.theBoard[location.y][location.x];
 			
 			//Center of the board
-			if((pieceLocation.y == 3 || pieceLocation.y == 4) && (pieceLocation.x == 3 || pieceLocation.x == 4) && piece < 1) 
+			if(	(location.y == 3 || location.y == 4) &&
+				(location.x == 3 || location.x == 4) &&
+				(piece < 1)	) 
 			{
 				eval -= 2;
 			}
@@ -404,22 +505,32 @@ public class ComputerAI extends Thread
 			{
 				case -1:  //Pawn
 					eval -= 10;
-					eval -= (8-pieceLocation.y); //-1 for every forward move
+					eval -= (8-location.y); //-1 for every forward move
+					
+					//Pawns should not block king's movement
+					if(	(location.x >= aBoard.theKings[1].x - 1 && 
+						location.x <= aBoard.theKings[1].x + 1) &&
+						(location.y >= aBoard.theKings[1].y - 1 && 
+						location.y <= aBoard.theKings[1].y + 1))
+					{
+						eval += 1;
+					}
 					break;
 				case -2:  //Rook
-					eval -= 50;
+					eval -= 100;
 					break;
 				case -3:  //Knight
-					eval -=100;
+					eval -= 60;
 					break;
 				case -4:  //Bishop
-					eval -=50;
+					eval -= 50;
 					break;
 				case -5:  //Queen
-					eval -= 200;
+					eval -= 600;
 					break;
 				case -6:  //King
 					eval -= 10000;
+					eval -= action.getFeasibleMoves(aBoard, location).size();
 					break;
 			}
 		}
@@ -431,8 +542,7 @@ public class ComputerAI extends Thread
 	 *alpha-beta evaluation*/
 	private boolean terminateCondition(Board node, int ft)
 	{
-//System.out.println("ft: " + ft + " local: " + localTurn);
-		if(ft >= localTurn + IChess.ply)
+		if(ft >= localTurn + IChess.ply || areEqual(node, curBoard))
 		{
 			return true;
 		}

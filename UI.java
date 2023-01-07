@@ -2,8 +2,12 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import java.util.Vector;
-
-
+ 
+ /** IChess version 1.0
+  **
+  ** Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899)
+  **/
+  
 public class UI extends JFrame implements ActionListener
 {
 	private static final long serialVersionUID = 90L;
@@ -18,9 +22,9 @@ public class UI extends JFrame implements ActionListener
 	private Point origin;
 	private Point destination;
 	private Vector<Point> moveList;
-	private Timer timer; 
+	private LoadBoard lBoard;
 	
-
+	private Timer timer; 
 	
 	static final Color TRANSPARENT = new Color(255,255,255,0);
 	
@@ -28,7 +32,7 @@ public class UI extends JFrame implements ActionListener
 	{
 		setTitle("iChess");
 		setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
-		
+	//	setResizeable(false);
 		contentPane = getContentPane();
 		
 		menu = new ChessMenuBar();
@@ -50,9 +54,8 @@ public class UI extends JFrame implements ActionListener
 		 
 		pack();
 		setVisible(true);
-		
 		origin = new Point(0,0);
-
+		
 		timer = new Timer(0,this);
 		timer.setRepeats(false);
 		timer.start();
@@ -87,11 +90,10 @@ public class UI extends JFrame implements ActionListener
 		{
 			for(i = 0; i < moveList.size(); i++)
 			{
-				System.out.println("Should see if it can move from place to place");
 				if(cSquare.equals(moveList.elementAt(i)))
 				{
 					destination = cSquare;
-					System.out.println("Should move from place to place");
+//					System.out.println("Should move from place to place");
 					//May be moved if a more appropariate place is found
 					move = action.move(board, origin, destination);
 				
@@ -131,13 +133,12 @@ public class UI extends JFrame implements ActionListener
 				bp.highlight(origin, Color.BLUE);
 			}
 			
+			// Seems to solve the problem of clicking on an opposite piece wrt
+			// removing the highlights
+			moveList = action.getFeasibleMoves(board, origin);
+			updateFeasibleDisplay();
+			
 		}
-		
-		
-		//I Haven't decided yet exactly where I want this next section, but here
-		//is good for now.
-		moveList = action.getFeasibleMoves(board, origin);
-		updateFeasibleDisplay();
 		return 0;
 	}
 	
@@ -146,11 +147,8 @@ public class UI extends JFrame implements ActionListener
 		this.board = board;
 		this.origin = o;
 		this.destination = d;
-		
-		
 		afterMoveProcessing();
 	}
-	
 	
 	public synchronized Board getBoard()
 	{
@@ -165,18 +163,17 @@ public class UI extends JFrame implements ActionListener
 		IChess.turn++;
 		tp.updateTurn(origin, destination);
 		
-		//A hack if ever I made one
 		timer.start();
 	}
 	
-	//TODO: Display Check/Checkmate and handle Checkmate
 	private synchronized void preMoveProcessing()
 	{
+		
 		if(action.isBoardInCheck(board, IChess.turn % 2))
 		{
 			tp.playerInCheck(IChess.turn % 2);
 			
-			System.out.println("Board is in Check");
+//			System.out.println("Board is in Check");
 			if(action.isMate(board, IChess.turn % 2))
 			{
 				endGame("CHECKMATE", (IChess.turn + 1) % 2);
@@ -191,6 +188,11 @@ public class UI extends JFrame implements ActionListener
 				endGame("STALEMATE", 2); //tie
 			}
 		}
+		
+		if(board.movesUntilDraw <= 0)
+		{
+			endGame("DRAW", 2);
+		}
 	}
 	
 	//end of game
@@ -203,9 +205,9 @@ public class UI extends JFrame implements ActionListener
 		IChess.whiteIsComputer = false;
 		IChess.blackIsComputer = false;
 		
-		System.out.println("END OF GAME!");
-		System.out.println("Status: " + status);
-		System.out.println("winner: " + winner);
+//		System.out.println("END OF GAME!");
+//		System.out.println("Status: " + status);
+//		System.out.println("winner: " + winner);
 		
 		while(flag)
 		{
@@ -220,10 +222,7 @@ public class UI extends JFrame implements ActionListener
 				
 				case EndGameDialog.PLAY_AGAIN:
 					flag = false;
-					board = action.createInitialBoard();
-					bp.setBoardSetup(board);
-					IChess.turn = 0;
-					tp.reset();
+					resetGame(action.createInitialBoard());
 					break;
 					
 				case EndGameDialog.SAVE:
@@ -231,7 +230,7 @@ public class UI extends JFrame implements ActionListener
 					break;
 					
 				default:
-					System.out.println("Unknown");
+//					System.out.println("Unknown");
 					break;
 			}
 		}
@@ -249,8 +248,23 @@ public class UI extends JFrame implements ActionListener
 				Point p = moveList.elementAt(i);
 				
 				if((board.theBoard[p.y][p.x] * curPiece) >=0)
-				{
-					bp.highlight(p,Color.GREEN);
+				{					
+					// checks to see if this is a pawn and is moving diagonally
+					// this implies its an en passant capture as it got through
+					// the sign test for >=0
+					if(Math.abs(curPiece) == 1 && Math.abs(origin.x - p.x) == 1)
+					{
+						bp.highlight(p,Color.RED);
+					}
+					// Tests to see if its a castle move
+					else if(Math.abs(curPiece)==6 &&Math.abs(origin.x-p.x) == 2)
+					{
+						bp.highlight(p,Color.MAGENTA);
+					}
+					else
+					{
+						bp.highlight(p,Color.GREEN);
+					}
 				}
 				else
 				{
@@ -260,28 +274,19 @@ public class UI extends JFrame implements ActionListener
 		}
 	}
 	
-	// Should undo highlight, temp solution
+	// Should undo highlights
 	private void clearFeasibleDisplay()
 	{
-		int i, x1, y1;
-		if(!moveList.isEmpty())
+		int i;
+		if(moveList != null)
 		{
-			for(i=0 ; i<moveList.size(); i++)
+			for(i=0; i<moveList.size(); i++)
 			{
-				x1 = moveList.elementAt(i).x;
-				y1 = moveList.elementAt(i).y;
-				if((x1 + y1) % 2 == 0)
-				{
-					bp.highlight(moveList.elementAt(i),Color.BLACK);
-				}
-				else
-				{
-					bp.highlight(moveList.elementAt(i),Color.WHITE);
-				}
+				bp.highlight(moveList.elementAt(i),Color.WHITE);
 			}
 		}
 	}
-	
+		
 	public void setFeasibleMoves(Vector<Point> moveList)
 	{
 		this.moveList = moveList;
@@ -291,6 +296,65 @@ public class UI extends JFrame implements ActionListener
 	{
 		this.board = board;
 		bp.setBoardSetup(board);
+	}
+	
+	// Loads a new game based on a text file
+	public synchronized void loadNewBoard()
+	{
+		boolean loaded = true;
+		Board theBoard;
+		theBoard = new Board();
+		
+		lBoard = new LoadBoard();
+		try
+		{
+			theBoard = lBoard.getBoard();
+		}
+		catch (Exception e)
+		{
+			System.err.println("Cannot load board");
+			loaded = false;
+		}
+		
+		if(loaded)
+		{
+			resetGame(theBoard);
+		}		
+	}
+	
+	public synchronized void wakeUp()
+	{
+		notifyAll();
+	}
+	
+	public synchronized void resetGame(Board board)
+	{
+		int tempPly = IChess.ply;
+		IChess.ply = 0;
+		try
+		{
+			wait();
+		}
+		catch(Exception ex)
+		{
+			System.err.println("I'm not sure why this happens...");
+		}
+		this.board = board;
+		bp.setBoardSetup(board);
+		IChess.blackIsComputer = false;
+		IChess.whiteIsComputer = false;
+		IChess.turn = 0;
+		IChess.ply = tempPly;
+		tp.reset();
+		menu.reset();
+	}
+	
+	
+	public synchronized void defaultBoard()
+	{
+		Board theBoard = new Board();
+		theBoard = action.createInitialBoard();
+		resetGame(theBoard);
 	}
 	
 	public void actionPerformed(ActionEvent e)

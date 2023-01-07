@@ -1,18 +1,11 @@
 import java.awt.Point;
 import java.util.Vector;
 
-/** TODO: Castling
- **
- ** Need flags to see if rook and king have moved.
- **		Perhaps 1 flag for white and black.
- **			wCastle, bCastle: boolean values
- **
- **	If xCastle is true check to see if the king is in check.
- **
- **	If castle can take place then make sure the two sqaures are feasible moves
- **	Could reuse the feasible move list or a check checker
- **/
- 
+ /** IChess version 1.0
+  **
+  ** Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899)
+  **/
+   
 public class BoardAction
 {
 	public Vector<Board> move(Board board, Point origin, Point destination)
@@ -20,28 +13,38 @@ public class BoardAction
 	{
 		Vector<Board> boardVector = new Vector<Board>();
 		
-//		Boolean hasPromoted = false;
-		
 		Board newBoard;
 		Point p;
 		int i;
 		int player = 0;
 		int movingPiece = board.theBoard[origin.y][origin.x];
 		
-		newBoard = board.clone(); 	
+		newBoard = board.clone();
 		
-		newBoard.theBoard[origin.y][origin.x] = 0;
+		newBoard.theBoard[origin.y][origin.x] = 0;	// clears the origin square
 		
-		//Kill any black piece here!
+		newBoard.movesUntilDraw--;	// Decrease draw counter
+		
+		// Removed captured black piece
 		if(board.theBoard[destination.y][destination.x] < 0)
 		{
+			newBoard.movesUntilDraw = 100;
 			newBoard.blackPieces.remove(destination);
 		}
-		else if(board.theBoard[destination.y][destination.x] > 0)
+		// Remove captured white piece
+		else if(board.theBoard[destination.y][destination.x] > 0) 
 		{
+			newBoard.movesUntilDraw = 100;
 			newBoard.whitePieces.remove(destination);
 		}
 		
+		// If a pawn moves reset the draw counter
+		if(Math.abs(movingPiece) == 1)
+		{
+			newBoard.movesUntilDraw = 100;
+		}
+		
+		// Removes the old piece location and adds the new location
 		if(movingPiece > 0)
 		{
 			player = 0;
@@ -55,29 +58,90 @@ public class BoardAction
 			newBoard.blackPieces.add(destination);
 		}
 		
-		// sets castle check to false;
+		// Changes the last moved piece for this player and how far it moved		
+		newBoard.lastMoved[player] = destination;
+		newBoard.lastYDistance[player] = Math.abs(origin.y - destination.y);
+
+		// Check for en passant for both player colours
+		if((movingPiece == 1 && origin.y == 4)			// 5th rank for white
+		 ||(movingPiece == -1 && origin.y == 3))		// 5th rank for black
+		{
+			int oldPlayer = Math.abs(player-1);
+			
+			Point lMove = board.lastMoved[oldPlayer];
+			
+			// A Pawn was moved by the opposite player
+			if((board.theBoard[lMove.y][lMove.x] == -1 && oldPlayer == 1)
+			|| (board.theBoard[lMove.y][lMove.x] == 1 && oldPlayer == 0))
+			{
+				// Pawn was moved two spaces and both pawns are on the y plane
+				if(board.lastYDistance[oldPlayer] == 2 && (lMove.y == origin.y))
+				{
+					if(Math.abs(lMove.x - origin.x) == 1)// 1 space away
+					{
+						Point tPoint = new Point();
+						
+						// Space behind the last moved pawn
+						
+						if(oldPlayer == 1)		// White is moving
+						{
+							tPoint = new Point(lMove.x,origin.y+1);
+						}
+						else if (oldPlayer == 0) // Black is moving
+						{
+							tPoint = new Point(lMove.x,origin.y-1);
+						}
+													
+						// If the desitnation is that space en passant occured
+						if(tPoint.equals(destination))
+						{
+							newBoard.theBoard[lMove.y][lMove.x] = 0;
+							
+							if(oldPlayer == 1)
+							{
+								newBoard.blackPieces.remove(lMove);
+							}
+							else if(oldPlayer == 0)
+							{
+								newBoard.whitePieces.remove(lMove);
+							}
+						}
+					}
+				}
+			}
+		}
+
 		if(Math.abs(movingPiece) == 6|| Math.abs(movingPiece)==2)
 		{
-			newBoard.castleCheck[player] = false;
+			if(Math.abs(movingPiece)==6)						// King
+			{
+				newBoard.castleCheck[player][1] = false;
+			}
+			else if(Math.abs(movingPiece)==2 && origin.x == 0)	// Left Rook
+			{
+				newBoard.castleCheck[player][0] = false;
+			}
+			else if(Math.abs(movingPiece)==2 && origin.x == 7)	// Right Rook
+			{
+				newBoard.castleCheck[player][2] = false;
+			}
 		}
-		
-		// If the pieces are kings update their positions in the piece list
-		/*if(movingPiece == 6){			newBboard.theKings[1] = destination;}
-		*/
-		
+
+		// Sets the king postion and checks for castle
 		if(Math.abs(movingPiece) == 6)
 		{
-			
 			newBoard.theKings[player] = destination; 
 			
+			// Castle to the right
 			if(destination.x - origin.x == 2)
 			{
-				System.out.println("Castle!");
 				Point oldRook = new Point(7, destination.y);
 				Point newRook = new Point(5, destination.y);
 				
+				// Removes the rook at the right
 				newBoard.theBoard[destination.y][7] = 0;
-							
+				
+				// Moves rook to the new location			
 				if(movingPiece > 0)
 				{
 					newBoard.whitePieces.remove(oldRook);
@@ -92,36 +156,50 @@ public class BoardAction
 				}
 				
 			}
+			// Castle to the left
+			else if(destination.x - origin.x == -2)
+			{
+				Point oldRook = new Point(0, destination.y);
+				Point newRook = new Point(3, destination.y);
+				
+				newBoard.theBoard[destination.y][0] = 0;
+				
+				// Moves rook to the new location		
+				if(movingPiece > 0)
+				{
+					newBoard.whitePieces.remove(oldRook);
+					newBoard.whitePieces.add(newRook);
+					newBoard.theBoard[destination.y][3] = 2;
+				}
+				else
+				{
+					newBoard.blackPieces.remove(oldRook);
+					newBoard.blackPieces.add(newRook);
+					newBoard.theBoard[destination.y][3] = -2;	
+				}
+			}
 		}
 		
-		// Since pawns can only move forward I only need to check for 0 or 7
-		// otherwise that would imply the pawn has moved backwards which isn't
-		// possible.
+		/** Since pawns can only move forward I only need to check for 0 or 7
+		 ** otherwise that would imply the pawn has moved backwards which isn't
+		 ** possible.
+		 */
 		
 		if(Math.abs(movingPiece)== 1 && (destination.y==0 || destination.y==7))
 		{
-			// temp solution until the vector method is adopted
-			movingPiece = 5*movingPiece;
-			// only need because i put the regular piece adder in the else below
-			newBoard.theBoard[destination.y][destination.x] = movingPiece;
+			Board rookBoard = newBoard.clone();		// Board with a new rook
+			Board knightBoard = newBoard.clone();	// Board with a new knight
+			Board bishopBoard = newBoard.clone();	// Board with a new bishop
+			Board queenBoard = newBoard.clone();	// Board with a new queen
 			
-//			System.out.println("Promotion");
-			
-//			hasPromoted = true;
-			
-			Board rookBoard = newBoard.clone();
-			Board knightBoard = newBoard.clone();
-			Board bishopBoard = newBoard.clone();
-			Board queenBoard = newBoard.clone();
-			
-			if(player == 0)
+			if(player == 0) // White pieces
 			{
 				rookBoard.theBoard[destination.y][destination.x] = 2;
 				knightBoard.theBoard[destination.y][destination.x] = 3;
 				bishopBoard.theBoard[destination.y][destination.x] = 4;
 				queenBoard.theBoard[destination.y][destination.x] = 5;
 			}
-			else
+			else // Black pieces
 			{
 				rookBoard.theBoard[destination.y][destination.x] = -2;
 				knightBoard.theBoard[destination.y][destination.x] = -3;
@@ -129,6 +207,7 @@ public class BoardAction
 				queenBoard.theBoard[destination.y][destination.x] = -5;
 			}
 			
+			// Adds the new board states to the return vector
 			boardVector.add(rookBoard);
 			boardVector.add(knightBoard);
 			boardVector.add(bishopBoard);
@@ -136,18 +215,12 @@ public class BoardAction
 		}
 		else
 		{
+			// If no pieces are being promoted
 			newBoard.theBoard[destination.y][destination.x] = movingPiece;
 			boardVector.add(newBoard);
 		}
 		
 		return boardVector;
-		//return newBoard;
-	}
-	
-	//Possibly not necessary...
-	public boolean isFeasibleMove(Board theBoard, Point origin, Point destination)
-	{
-		return false;	
 	}
 	
 	/** Returns a vector of feasible moves
@@ -192,6 +265,7 @@ public class BoardAction
 		//White Pawn
 		if(theCurPiece == 1)
 		{
+			// Forward one square
 			if(piece.y+1 < 8 && board.theBoard[piece.y+1][piece.x] == 0)
 			{
 				Point tPoint = new Point(piece.x, piece.y+1);
@@ -200,8 +274,9 @@ public class BoardAction
 					fMoves.add(tPoint);
 				}
 			}
-			
-			if(piece.y+1 < 8 && piece.x+1 <8 && board.theBoard[piece.y+1][piece.x+1] < 0)
+			// Checks Up Right
+			if(piece.y+1 < 8 && piece.x+1 <8
+			&& board.theBoard[piece.y+1][piece.x+1] < 0)
 			{
 				Point tPoint = new Point(piece.x+1, piece.y+1);
 				if(!checkChecker(board, piece, tPoint))
@@ -209,8 +284,9 @@ public class BoardAction
 					fMoves.add(tPoint);
 				}
 			}
-			
-			if(piece.y+1 < 8 && piece.x-1>=0 &&board.theBoard[piece.y+1][piece.x-1] < 0)
+			// Checks Up Left
+			if(piece.y+1 < 8 && piece.x-1>=0
+			&& board.theBoard[piece.y+1][piece.x-1] < 0)
 			{
 				Point tPoint = new Point(piece.x-1, piece.y+1);
 				if(!checkChecker(board, piece, tPoint))
@@ -219,6 +295,7 @@ public class BoardAction
 				}
 			}
 			
+			// Checks forward 2
 			if(piece.y == 1 && 
 				board.theBoard[piece.y+1][piece.x] == 0 &&
 				board.theBoard[piece.y+2][piece.x] == 0)
@@ -228,7 +305,37 @@ public class BoardAction
 				{
 					fMoves.add(tPoint);
 				}
-			}	
+			}
+			
+			// Start of En Passant!---------------------------------------------
+			
+			if(piece.y == 4)
+			{
+				Point lMove = board.lastMoved[1];
+				Point tPoint;
+				
+				int lastYDist =  board.lastYDistance[1];
+				
+				// Checks if its a black pawn that last moved 2 spaces
+				if(board.theBoard[lMove.y][lMove.x] == -1  && lastYDist == 2)
+				{
+					// Checks to see the pawns are on the same y plane
+					if(lMove.y == piece.y)
+					{
+						// Checks to see its on either side of the pawn
+						if(Math.abs(lMove.x - piece.x) == 1)
+						{
+							tPoint = new Point(lMove.x, piece.y+1);
+							
+							if(!checkChecker(board, piece, tPoint))
+							{
+								fMoves.add(tPoint);
+							}
+						}
+					}
+				}
+			}
+	
 		}
 		else if(theCurPiece == -1)
 		{
@@ -241,7 +348,8 @@ public class BoardAction
 				}
 			}
 			
-			if(piece.y-1 >=0 && piece.x+1 <8 && board.theBoard[piece.y-1][piece.x+1] > 0)
+			if(piece.y-1 >=0 && piece.x+1 <8
+			&& board.theBoard[piece.y-1][piece.x+1] > 0)
 			{
 				Point tPoint = new Point(piece.x+1, piece.y-1);
 				if(!checkChecker(board, piece, tPoint))
@@ -250,7 +358,8 @@ public class BoardAction
 				}
 			}
 			
-			if(piece.y-1 >=0 && piece.x-1>=0 &&board.theBoard[piece.y-1][piece.x-1] > 0)
+			if(piece.y-1 >=0 && piece.x-1>=0
+			&& board.theBoard[piece.y-1][piece.x-1] > 0)
 			{
 				Point tPoint = new Point(piece.x-1, piece.y-1);
 				if(!checkChecker(board, piece, tPoint))
@@ -268,7 +377,36 @@ public class BoardAction
 				{
 					fMoves.add(tPoint);
 				}
-			}	
+			}
+			
+			// En Passant
+			if(piece.y == 3)
+			{
+				Point lMove = board.lastMoved[0];
+				Point tPoint;
+				
+				int lastYDist =  board.lastYDistance[0];
+				
+				// Checks if its a black pawn that last moved 2 spaces
+				if(board.theBoard[lMove.y][lMove.x] == 1  && lastYDist == 2)
+				{
+					// Checks to see the pawns are on the same y plane
+					if(lMove.y == piece.y)
+					{
+						// Checks to see its on either side of the pawn
+						if(Math.abs(lMove.x - piece.x) == 1)
+						{
+							tPoint = new Point(lMove.x, piece.y-1);
+							
+							if(!checkChecker(board, piece, tPoint))
+							{
+								fMoves.add(tPoint);
+							}
+						}
+					}
+				}
+			}
+				
 		}
 		// Rook
 		else if(Math.abs(theCurPiece) == 2)
@@ -573,7 +711,7 @@ public class BoardAction
 				y1--;
 			}
 			
-			// From the Rook---------------------------------------------------
+			// From the Rook----------------------------------------------------
 			
 			// Forward and Backward
 			fMoves = combineVectors(fMoves, checkVertMoves(board,piece));
@@ -592,6 +730,11 @@ public class BoardAction
 			if(canCastle(board, turn))
 			{
 				fMoves.add(new Point(x1+2,y1));
+			}
+			
+			if(canCastleLeft(board, turn))
+			{
+				fMoves.add(new Point(x1-2,y1));
 			}
 			
 			// Forward
@@ -654,7 +797,7 @@ public class BoardAction
 		return fMoves;	
 	}
 	
-	// Checks the moves upwards from the current piece
+	// Checks the moves forward / backward from the current piece
 	private Vector<Point> checkVertMoves(Board board, Point piece)
 	{
 		Vector<Point> retVector = new Vector<Point>();
@@ -722,33 +865,37 @@ public class BoardAction
 	}
 		
 	// Adds vector 2 to vector 1 and returns 
-	private Vector<Point> combineVectors(Vector<Point> input1, Vector<Point> input2)
+	private Vector<Point> combineVectors(Vector<Point> in1, Vector<Point> in2)
 	{
-		for(int i=0 ; i<input2.size() ; i++)
+		for(int i=0 ; i<in2.size() ; i++)
 		{
-			input1.add(input2.elementAt(i));
+			in1.add(in2.elementAt(i));
 		}			
-		return input1;		
+		return in1;		
 	}
 	
 	
 	// This will evalute a board for check based on 
 	private boolean checkChecker(Board board, Point start, Point end)
 	{
-		boolean theResult = false;
 		Point theKing;
 		
 		int theCurPiece = board.theBoard[start.y][start.x];
-//		System.out.println("The Current piece is: "+theCurPiece );
 		
-		if(theCurPiece<0){	theKing = board.theKings[1];}
-		else{				theKing = board.theKings[0];}
+		if(theCurPiece<0){	theKing = board.theKings[1];}	// Black King
+		else{				theKing = board.theKings[0];}	// White King
 		
-		// If the piece you selected happens to be a king change to reflect pos 
+		// If the piece you selected is a king change the king to be destination
 		if(Math.abs(theCurPiece)==6){theKing = end;}
 		
-		// Vertical-------------------------------------------------------------
-		
+		/** Vertical------------------------------------------------------------
+		 **
+		 ** The pieces that can cause a check or mate on the vertical are
+		 ** Rooks, Queens, and Kings. However Kings must be within one square
+		 ** to cause a check. However you would never get two kings beside each
+		 ** other as that would result in check for both which can't happen.
+		 */
+		 
 		// Forward
 		for(int i = theKing.y+1 ; i<8 ; i++)
 		{
@@ -764,20 +911,19 @@ public class BoardAction
 			
 			if(sign>0)
 			{
-			//	System.out.println("No Check to the front");
 				break;
 			}
 			// Attacking
 			else if(sign<0)
 			{	
 				newPiece = Math.abs(newPiece);
-				if(newPiece == 6 && Math.abs((tPoint.x-theKing.x))==1)
+				if(newPiece == 6 && Math.abs((tPoint.y-theKing.y))==1)
 				{
-					theResult = true;
+					return true;
 				}
 				else if(newPiece == 2 || newPiece == 5)
 				{
-					theResult = true;
+					return true;
 				}else{break;}
 			}
 		}
@@ -804,18 +950,24 @@ public class BoardAction
 			else if(sign<0)
 			{	
 				newPiece = Math.abs(newPiece);
-				if(newPiece == 6 && Math.abs((tPoint.x-theKing.x))==1)
+				if(newPiece == 6 && Math.abs((tPoint.y-theKing.y))==1)
 				{
-					theResult = true;
+					return true;
 				}
 				else if(newPiece == 2 || newPiece == 5)
 				{
-					theResult = true;
+					return true;
 				}else{break;}
 			}
 		}
 		
-		// Horizontal-----------------------------------------------------------
+		/** Horizontal----------------------------------------------------------
+		 **
+		 ** The pieces that can cause a check or mate on the horizontal are
+		 ** Rooks, Queens, and Kings. However Kings must be within one square
+		 ** to cause a check. However you would never get two kings beside each
+		 ** other as that would result in check for both which can't happen.
+		 */
 		
 		// Left
 		for(int i = theKing.x-1 ; i>=0 ; i--)
@@ -840,11 +992,11 @@ public class BoardAction
 				newPiece = Math.abs(newPiece);
 				if(newPiece == 6 && Math.abs((tPoint.x-theKing.x))==1)
 				{
-					theResult = true;
+					return true;
 				}
 				else if(newPiece == 2 || newPiece == 5)
 				{
-					theResult = true;
+					return true;
 				}else{break;}
 			}
 		}
@@ -872,16 +1024,27 @@ public class BoardAction
 				newPiece = Math.abs(newPiece);
 				if(newPiece == 6 && Math.abs((tPoint.x-theKing.x))==1)
 				{
-					theResult = true;
+					return true;
 				}
 				else if(newPiece == 2 || newPiece == 5)
 				{
-					theResult = true;
+					return true;
 				}else{break;}
 			}
 		}
 		
-		// Diagonals------------------------------------------------------------
+		/** Diagonals-----------------------------------------------------------
+		 **
+		 ** Special cases for the king and the pawn as they must be 1 square
+		 ** away diagonally for them to envoke a capture. Because of this there
+		 ** is the check of the abs value of (x1 - kings x) * (y1 - kings y) is
+		 ** equal to 1 which indicates 1 square away on the diagonals.
+		 **
+		 ** In addition to this the pawns can only attack in certain directions.
+		 ** Because of this when we check up right and up left we are looking
+		 ** for black pawns. When we check down right and down left we are
+		 ** looking for white pawns.
+		 */
 		
 		// Up Right
 		
@@ -907,15 +1070,16 @@ public class BoardAction
 				
 				if(theCurPiece * newPiece < 0)
 				{
+					int savePiece = newPiece;
 					newPiece = Math.abs(newPiece);
 					if(newPiece == 4 || newPiece == 5
-					 ||newPiece == 6 || newPiece == 1)
+					 ||newPiece == 6 || savePiece == -1)
 					{
-						if(newPiece == 6 || newPiece == 1)
+						if(newPiece == 6 || savePiece == -1)
 						{
 							if(Math.abs((x1 - theKing.x)*(y1 - theKing.y)) ==1)
 							{
-								theResult = true;
+								return true;
 							}
 							else
 							{
@@ -924,7 +1088,7 @@ public class BoardAction
 						}
 						else
 						{
-							theResult = true;
+							return true;
 						}						
 					}
 					else{break;}
@@ -933,7 +1097,7 @@ public class BoardAction
 				x1++;
 				y1++;
 			}
-			
+							
 			// Down Right
 		
 			y1 = theKing.y - 1;
@@ -958,15 +1122,16 @@ public class BoardAction
 				
 				if(theCurPiece * newPiece < 0)
 				{
+					int savePiece = newPiece;
 					newPiece = Math.abs(newPiece);
-					if(newPiece == 4 || newPiece == 5 
-					|| newPiece == 6 || newPiece == 1)
+					if(newPiece == 4 || newPiece == 5
+					 ||newPiece == 6 || savePiece == 1)
 					{
-						if(newPiece == 6 || newPiece == 1)
+						if(newPiece == 6 || savePiece == 1)
 						{
 							if(Math.abs((x1 - theKing.x)*(y1 - theKing.y)) ==1)
 							{
-								theResult = true;
+								return true;
 							}
 							else
 							{
@@ -975,7 +1140,7 @@ public class BoardAction
 						}
 						else
 						{
-							theResult = true;
+							return true;
 						}						
 					}
 					else{break;}
@@ -1009,15 +1174,16 @@ public class BoardAction
 								
 				if(theCurPiece * newPiece < 0)
 				{
+					int savePiece = newPiece;
 					newPiece = Math.abs(newPiece);
-					if(newPiece == 4 || newPiece == 5 
-					|| newPiece == 6 || newPiece == 1)
+					if(newPiece == 4 || newPiece == 5
+					 ||newPiece == 6 || savePiece == 1)
 					{
-						if(newPiece == 6 || newPiece == 1)
+						if(newPiece == 6 || savePiece == 1)
 						{
 							if(Math.abs((x1 - theKing.x)*(y1 - theKing.y)) ==1)
 							{
-								theResult = true;
+								return true;
 							}
 							else
 							{
@@ -1026,11 +1192,11 @@ public class BoardAction
 						}
 						else
 						{
-							theResult = true;
+							return true;
 						}						
 					}
 					else{break;}
-				}				
+				}
 				
 				x1--;
 				y1--;
@@ -1060,15 +1226,16 @@ public class BoardAction
 				
 				if(theCurPiece * newPiece < 0)
 				{
+					int savePiece = newPiece;
 					newPiece = Math.abs(newPiece);
-					if(newPiece == 4 || newPiece == 5 
-					|| newPiece == 6 || newPiece == 1)
+					if(newPiece == 4 || newPiece == 5
+					 ||newPiece == 6 || savePiece == -1)
 					{
-						if(newPiece == 6 || newPiece == 1)
+						if(newPiece == 6 || savePiece == -1)
 						{
 							if(Math.abs((x1 - theKing.x)*(y1 - theKing.y)) ==1)
 							{
-								theResult = true;
+								return true;
 							}
 							else
 							{
@@ -1077,12 +1244,11 @@ public class BoardAction
 						}
 						else
 						{
-							theResult = true;
+							return true;
 						}						
 					}
 					else{break;}
 				}				
-				
 				x1--;
 				y1++;
 			}
@@ -1101,7 +1267,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 				
@@ -1112,7 +1278,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 			}
@@ -1127,7 +1293,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 				
@@ -1138,7 +1304,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 			}
@@ -1153,7 +1319,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 				
@@ -1164,7 +1330,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 			}
@@ -1179,7 +1345,7 @@ public class BoardAction
 						&&theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 				
@@ -1191,13 +1357,11 @@ public class BoardAction
 						&& theCurPiece*thePiece<0
 						&& Math.abs(thePiece)==3)
 					{
-						theResult = true;
+						return true;
 					}
 				}
 			}		
-//		if(theResult){System.out.println("CHECK!!");}
-		
-		return theResult;
+		return false;
 	}
 	
 	// Should check if a board state is in check.
@@ -1221,7 +1385,7 @@ public class BoardAction
 		{
 			for(i = 0; i < board.whitePieces.size(); i++)
 			{
-				feasible = getFeasibleMoves(board, board.whitePieces.elementAt(i));
+				feasible=getFeasibleMoves(board,board.whitePieces.elementAt(i));
 				if(!feasible.isEmpty())
 				{
 					isMate = false;
@@ -1233,7 +1397,7 @@ public class BoardAction
 		{
 			for(i = 0; i < board.blackPieces.size(); i++)
 			{
-				feasible = getFeasibleMoves(board, board.blackPieces.elementAt(i));
+				feasible=getFeasibleMoves(board,board.blackPieces.elementAt(i));
 				if(!feasible.isEmpty())
 				{
 					isMate = false;
@@ -1245,30 +1409,67 @@ public class BoardAction
 		return isMate;
 	}
 	
-	// Check if Rook is a valid move
+	/** Checks the two spaces between the king and the rook on the right side of
+	 ** the board to ensure castling can take place.
+	 */
 	public boolean canCastle(Board board, int turn)
 	{
 		Point theKing = board.theKings[turn];
 		boolean retVal = false;
 		
-		if(board.castleCheck[turn] && !isBoardInCheck(board, turn))
+		if(board.castleCheck[turn][1]		// King
+		&& board.castleCheck[turn][2]		// Kings Rook
+		&& !isBoardInCheck(board, turn))
 		{
-//System.out.println("Can Castle Still");
 			if(board.theBoard[theKing.y][theKing.x+1] == 0
 			&& board.theBoard[theKing.y][theKing.x+2] == 0)
 			{
 				Point tPoint1 = new Point(theKing.x+1,theKing.y);
 				Point tPoint2 = new Point(theKing.x+2,theKing.y);
-				
-//System.out.println("Squares are free");
-				
+								
 				if(!checkChecker(board,theKing,tPoint1))
 				{
-//System.out.println("First Square is not in check");
 					if(!checkChecker(board,theKing,tPoint2))
 					{
-//System.out.println("Second Square is not in check");
 						retVal = true;
+					}
+				}
+			}			
+		}
+		
+		return retVal;
+	}
+	
+	/** Castle to the Left side of board as viewed by white. Needs to check the
+	 ** three spaces between the rook and the king in order to ensure castling
+	 ** can take place in this direction.
+	 */ 
+	
+	public boolean canCastleLeft(Board board, int turn)
+	{
+		Point theKing = board.theKings[turn];
+		boolean retVal = false;
+		
+		if(board.castleCheck[turn][0]	// First Rook
+		&& board.castleCheck[turn][1]	// King
+		&& !isBoardInCheck(board, turn))
+		{
+			if(board.theBoard[theKing.y][theKing.x-1] == 0
+			&& board.theBoard[theKing.y][theKing.x-2] == 0
+			&& board.theBoard[theKing.y][theKing.x-3] == 0)
+			{
+				Point tPoint1 = new Point(theKing.x-1,theKing.y);
+				Point tPoint2 = new Point(theKing.x-2,theKing.y);
+				Point tPoint3 = new Point(theKing.x-3,theKing.y);
+							
+				if(!checkChecker(board,theKing,tPoint1))
+				{
+					if(!checkChecker(board,theKing,tPoint2))
+					{
+						if(!checkChecker(board,theKing,tPoint3))
+						{
+							retVal = true;
+						}						
 					}
 				}
 			}			
@@ -1312,20 +1513,26 @@ public class BoardAction
 			board.theBoard[7][i] = -(9-i);
 			board.blackPieces.add(new Point(i, 7));
 		}
-		
-		/*
-		board.theBoard[0][4] = 6;
-		board.theBoard[7][4] = -6;
-		
-		board.whitePieces.add(new Point(4,0));
-		board.blackPieces.add(new Point(4,7));
-		*/
-		
+				
 		board.theKings[0] = new Point(4,0);
 		board.theKings[1] = new Point(4,7);
+
+		for(i=0 ; i<2 ; i++)
+		{
+			for(int j=0 ; j<3 ; j++)
+			{
+				board.castleCheck[i][j] = true;
+			}
+		}
 		
-		board.castleCheck[0] = true;
-		board.castleCheck[1] = true;
+		// Should set the point to be non existant
+		board.lastMoved[0] = new Point(-1,-1);
+		board.lastMoved[1] = new Point(-1,-1);
+		
+		board.lastYDistance[0] = 0;
+		board.lastYDistance[1] = 0;
+		
+		board.movesUntilDraw = 100;
 		
 		return board;
 	}
