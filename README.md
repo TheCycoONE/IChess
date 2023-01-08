@@ -1,10 +1,14 @@
 # Intelligent Chess
-Cosc 3P71 Project
 
-Stephen Baker (2913895) and Chris Roy (3048899)
-Jan 6th, 2006
+A computer chess program with a min-max AI, originally written as an undergraduate assignment by Chris Roy and Stephen Baker.
 
-Made for Java runtime 1.5
+## Running
+Navigate to the top directory of the repository.
+
+On Unix like systems: `./gradlew run`
+
+On Windows: `gradlew.bat run`
+
 
 ## HOW TO USE ICHESS
 
@@ -14,7 +18,7 @@ In File you have the following options **New Game**, **Open Game State** and **Q
 
 In Player you have two options **white is computer** and **black is computer**. These options will set which colour is using the AI and which is a human. By default both are not checked which indicates that both black and white are human players. You can set either colour to be human or computer at any point during the game by clicking on the corresponding option.
 
-The last menu item is Difficulty. In this menu you can set the strength of the AI from the following options **Naïve**, **Easy**, **Intermediate**, **Hard**, or **Very Hard**. By default the strength is set to intermediate. Like the Player options you can change the strength of the AI during game play.
+The last menu item is Difficulty. In this menu you can set the strength of the AI from the following options **NaÃ¯ve**, **Easy**, **Intermediate**, **Hard**, or **Very Hard**. By default the strength is set to intermediate. Like the Player options you can change the strength of the AI during game play.
 
 ### Playing a Game
 To move a piece you click on it and if it has any valid moves they will be highlighted in green or red. Green indicates the square is currently empty and Red indicates you will make a capture if you move there. The current piece you have selected will display as blue. If no moves are valid the piece will just be highlighted blue.
@@ -32,6 +36,11 @@ If either checkmate or stalemate occurs the end game dialog will be displayed wh
 
 ### 50 Move Rule
 The program also adheres to the 50 move rule in chess in which if no irreversible move is made in 50 consecutive moves the game is considered a tie. An irreversible move is one in which a pawn is moved, or a piece is captured.
+
+### Unimplemented Rules
+* Dead position: If there is no sequence of moves left that would result in checkmate the game ends in a tie.
+* Threefold position: If all the pieces end up in the same position three times in a game, a player can call a draw.
+* Time control
 
 ## ARTIFICIAL INTELLIGENCE
 
