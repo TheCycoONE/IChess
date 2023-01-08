@@ -24,15 +24,16 @@ public class Board {
   public static final int BLACK_MULTIPLIER = -1;
 
   public static Board createInitialBoard() {
+
     int i;
     Board board = new Board();
 
     // Set up pawns
     for (i = 0; i < 8; i++) {
-      board.theBoard[1][i] = PAWN;
+      board.theBoard[1][i] = 1;
       board.whitePieces.add(new Point(i, 1));
 
-      board.theBoard[6][i] = BLACK_MULTIPLIER * PAWN;
+      board.theBoard[6][i] = -1;
       board.blackPieces.add(new Point(i, 6));
     }
 
@@ -57,8 +58,20 @@ public class Board {
     board.theKings[0] = new Point(4, 0);
     board.theKings[1] = new Point(4, 7);
 
-    board.castleCheck[0] = true;
-    board.castleCheck[1] = true;
+    for (i = 0; i < 2; i++) {
+      for (int j = 0; j < 3; j++) {
+        board.castleCheck[i][j] = true;
+      }
+    }
+
+    // Should set the point to be non existant
+    board.lastMoved[0] = new Point(-1, -1);
+    board.lastMoved[1] = new Point(-1, -1);
+
+    board.lastYDistance[0] = 0;
+    board.lastYDistance[1] = 0;
+
+    board.movesUntilDraw = 100;
 
     return board;
   }
@@ -67,12 +80,29 @@ public class Board {
   public Vector<Point> blackPieces = new Vector<Point>();
   public Vector<Point> whitePieces = new Vector<Point>();
 
+  // array to store the location of the kings
   // 0 is white
   // 1 is black
   public Point[] theKings = new Point[2];
-  public boolean[] castleCheck = new boolean[2];
+  // public boolean[] castleCheck = new boolean[2];
 
-  /*A method to perform a deep copy of the current board state*/
+  // 0 for white
+  // 1 for black
+  // [][0] for first rook
+  // [][1] for king
+  // [][2] for second rook
+  public boolean[][] castleCheck = new boolean[2][3];
+
+  // Last Piece Moved: Stores the last point moved for each side
+  // 0 is white
+  // 1 is black
+  public Point[] lastMoved = new Point[2];
+
+  // records the last y distance. Needed only for en passant
+  public int[] lastYDistance = new int[2];
+
+  public int movesUntilDraw;
+
   public Board clone() {
     Board clone = new Board();
     int i, j;
@@ -98,9 +128,20 @@ public class Board {
     clone.theKings[0] = this.theKings[0];
     clone.theKings[1] = this.theKings[1];
 
-    // Clones the castle check condition. True if rook and king havn't moved
-    clone.castleCheck[0] = this.castleCheck[0];
-    clone.castleCheck[1] = this.castleCheck[1];
+    for (i = 0; i < castleCheck.length; i++) {
+      for (j = 0; j < castleCheck[i].length; j++) {
+        clone.castleCheck[i][j] = this.castleCheck[i][j];
+      }
+    }
+
+    // Last Piece Moved
+    clone.lastMoved[0] = this.lastMoved[0];
+    clone.lastMoved[1] = this.lastMoved[1];
+
+    clone.lastYDistance[0] = this.lastYDistance[0];
+    clone.lastYDistance[1] = this.lastYDistance[1];
+
+    clone.movesUntilDraw = this.movesUntilDraw;
 
     return clone;
   }

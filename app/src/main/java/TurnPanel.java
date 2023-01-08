@@ -4,6 +4,7 @@ import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+/** IChess version 1.0 * * Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899) */
 public class TurnPanel extends JPanel {
   private static final long serialVersionUID = 80L;
 
@@ -39,7 +40,6 @@ public class TurnPanel extends JPanel {
 
     setLayout(null);
 
-    // setBackground(Color.BLACK);
     turnDisplay = new JLabel("WHITE");
     turnDisplay.setBounds(20, 17, 200, 30);
     add(turnDisplay);
@@ -88,7 +88,7 @@ public class TurnPanel extends JPanel {
       if (IChess.turn != 1) {
         moveDisplay.append("\r\n");
       }
-      moveDisplay.append(IChess.turn / 2 + 1 + ":");
+      moveDisplay.append(IChess.turn / 2 + 1 + ": ");
       turnDisplay.setText("BLACK");
     } else {
       moveDisplay.append("\t");

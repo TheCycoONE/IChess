@@ -4,6 +4,7 @@ import java.io.*;
 import javax.imageio.*;
 import javax.swing.*;
 
+/** IChess version 1.0 * * Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899) */
 public class EndGamePanel extends JPanel implements ActionListener {
   private static final long serialVersionUID = 40L;
 
@@ -22,12 +23,20 @@ public class EndGamePanel extends JPanel implements ActionListener {
 
   private int status = -1;
 
+  /**
+   * The End Game Dialog * * The end game dialog will show up once the game is a draw or a mate has
+   * * occured. The dialog has three choices on it, "Play". "Save", and "Quit". * Play will start a
+   * new game with the AI turned off. Save will save the * list of moves that the game generated.
+   * Quit will terminate the app.
+   */
   public EndGamePanel(String status, int winner) {
     try {
       endGameBG = ImageIO.read(getClass().getResource("/images/EndGame/endGameDialog.png"));
     } catch (IOException ex) {
       System.err.println("images not found");
     }
+
+    // Loads the images for the icons
     nPlay = new ImageIcon(getClass().getResource("/images/EndGame/playIdle.png"), "play");
     rPlay = new ImageIcon(getClass().getResource("/images/EndGame/playOver.png"), "play");
     nQuit = new ImageIcon(getClass().getResource("/images/EndGame/quitIdle.png"), "quit");
@@ -54,30 +63,36 @@ public class EndGamePanel extends JPanel implements ActionListener {
     winnerLabel.setBounds(150, 30, 150, 20);
     add(winnerLabel);
 
+    // Sets up the quit button
     quitButton = new JButton(nQuit);
     quitButton.setRolloverIcon(rQuit);
     quitButton.setBorderPainted(false);
     quitButton.setContentAreaFilled(false);
+    quitButton.setFocusPainted(false);
     quitButton.setActionCommand("" + EndGameDialog.QUIT);
     quitButton.addActionListener(this);
-    quitButton.setLocation(100, 50);
-    quitButton.setBounds(60, 70, 80, 30);
+    quitButton.setLocation(100, 100);
+    quitButton.setBounds(50, 70, 80, 30);
     add(quitButton);
 
+    // Sets up the play button
     playButton = new JButton(nPlay);
     playButton.setRolloverIcon(rPlay);
     playButton.setBorderPainted(false);
     playButton.setContentAreaFilled(false);
+    playButton.setFocusPainted(false);
     playButton.setActionCommand("" + EndGameDialog.PLAY_AGAIN);
     playButton.addActionListener(this);
     playButton.setLocation(100, 100);
     playButton.setBounds(150, 70, 80, 30);
     add(playButton);
 
+    // Sets up the save button
     saveButton = new JButton(nSave);
     saveButton.setRolloverIcon(rSave);
     saveButton.setBorderPainted(false);
     saveButton.setContentAreaFilled(false);
+    saveButton.setFocusPainted(false);
     saveButton.setActionCommand("" + EndGameDialog.SAVE);
     saveButton.addActionListener(this);
     saveButton.setLocation(100, 100);
@@ -96,6 +111,7 @@ public class EndGamePanel extends JPanel implements ActionListener {
     }
   }
 
+  // will hide the window
   public void actionPerformed(ActionEvent e) {
     status = Integer.parseInt(e.getActionCommand());
     if (status > -1) {

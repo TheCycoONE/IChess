@@ -10,12 +10,12 @@ public class BoardActionListener implements ActionListener {
     // Only accept input from a human during the human's turn
     if (IChess.turn % 2 == 0 && IChess.whiteIsComputer == false
         || IChess.turn % 2 == 1 && IChess.blackIsComputer == false) {
+
       cSquare = translateToPoint(e.getActionCommand());
       IChess.gui.chosenSquare(cSquare);
     }
   }
 
-  /*Method to translate chess coordinates to internal coordinates*/
   private Point translateToPoint(String chessCoord) {
     Point realCoord = new Point();
 

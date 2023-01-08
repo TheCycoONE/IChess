@@ -1,0 +1,34 @@
+## Black
+bPA7
+bPB7
+bPC7
+bPD5
+bPE5
+bPF7
+bPG7
+bPH7
+bRA8
+bRH8
+bNC6
+bNF6
+bBA3
+bBH3
+bQD8
+bKE8
+## White
+wPA2
+wPB2
+wPC2
+wPD4
+wPE4
+wPF2
+wPG2
+wPH2
+wRA1
+wRH1
+wNC3
+wNF3
+wBA6
+wBH6
+wQD1
+wKE1

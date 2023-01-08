@@ -2,6 +2,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 
+/** IChess version 1.0 * * Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899) */
 public class EndGameDialog extends JDialog implements ComponentListener {
   private static final long serialVersionUID = 30L;
 
@@ -15,14 +16,16 @@ public class EndGameDialog extends JDialog implements ComponentListener {
 
   public EndGameDialog(JFrame owner, String status, int winner) {
     super(owner, true);
-    System.out.println("opening 1");
 
     cp = this.getContentPane();
 
-    setLocation(300, 300);
+    // Makes the location relative to the IChess main window
+    setLocation(IChess.gui.getX() + 200, IChess.gui.getY() + 300);
+
     setUndecorated(true);
-    setMinimumSize(new Dimension(400, 160));
-    setPreferredSize(new Dimension(400, 160));
+    setMinimumSize(new Dimension(372, 143));
+    setPreferredSize(new Dimension(372, 143));
+
     setBackground(UI.TRANSPARENT);
     cp.setBackground(UI.TRANSPARENT);
 

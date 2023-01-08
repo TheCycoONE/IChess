@@ -4,6 +4,8 @@ import javax.imageio.*;
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
+/** IChess version 1.0 * * Copyright 2006 Stephen Baker (2913895) and Chris Roy (3048899) */
+
 /*BoardPanel class - takes care of representing a board state on the screen*/
 public class BoardPanel extends JPanel {
   private static final long serialVersionUID = 10L;
@@ -28,6 +30,7 @@ public class BoardPanel extends JPanel {
   private ImageIcon hRed;
   private ImageIcon hBlue;
   private ImageIcon hGreen;
+  private ImageIcon hPurple;
 
   public BoardPanel() {
     setBorder(new EmptyBorder(16, 16, 16, 16));
@@ -52,6 +55,7 @@ public class BoardPanel extends JPanel {
       hRed = new ImageIcon(getClass().getResource("/images/Highlights/Red.png"));
       hBlue = new ImageIcon(getClass().getResource("/images/Highlights/Blue.png"));
       hGreen = new ImageIcon(getClass().getResource("/images/Highlights/Green.png"));
+      hPurple = new ImageIcon(getClass().getResource("/images/Highlights/Purple.png"));
 
     } catch (IOException e) {
       System.err.println("Images have been lost or not properly stored");
@@ -133,12 +137,19 @@ public class BoardPanel extends JPanel {
   /*Forward highlighting to the appropriate square*/
   public synchronized void highlight(Point hsqr, Color c) {
     if (c == Color.BLUE) {
+      // Origin
       square[hsqr.y][hsqr.x].setHighlight(hBlue);
     } else if (c == Color.GREEN) {
+      // Valid Move
       square[hsqr.y][hsqr.x].setHighlight(hGreen);
     } else if (c == Color.RED) {
+      // Capture
       square[hsqr.y][hsqr.x].setHighlight(hRed);
+    } else if (c == Color.MAGENTA) {
+      // Castle
+      square[hsqr.y][hsqr.x].setHighlight(hPurple);
     } else {
+      // None
       square[hsqr.y][hsqr.x].setHighlight(null);
     }
 
